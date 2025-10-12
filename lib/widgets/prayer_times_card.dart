@@ -4,7 +4,6 @@ import 'package:intl/intl.dart';
 import 'dart:math' as math;
 
 class PrayerTimesCard extends StatelessWidget {
-  // These are the updated parameters for the progress bar functionality
   final PrayerTimes prayerTimes;
   final Prayer currentPrayer;
   final String currentPrayerName;
@@ -69,7 +68,6 @@ class PrayerTimesCard extends StatelessWidget {
     );
   }
 
-  // This widget now builds the progress bar
   Widget _buildProgressIndicator() {
     return Expanded(
       flex: 3,
@@ -126,11 +124,24 @@ class PrayerTimesCard extends StatelessWidget {
     );
   }
 
-  // This widget now calculates and displays the end times
   Widget _buildPrayerList() {
     DateTime getEndTime(Prayer prayer) {
-      if (prayer == Prayer.isha) return tomorrowFajr;
-      return prayerTimes.timeForPrayer(prayerTimes.nextPrayer())!;
+      switch (prayer) {
+        case Prayer.fajr:
+          return prayerTimes.sunrise; // Fajr ends at sunrise
+        case Prayer.sunrise:
+          return prayerTimes.dhuhr; // Not shown but for logic
+        case Prayer.dhuhr:
+          return prayerTimes.asr;
+        case Prayer.asr:
+          return prayerTimes.maghrib;
+        case Prayer.maghrib:
+          return prayerTimes.isha;
+        case Prayer.isha:
+          return tomorrowFajr; // Isha ends at next day’s Fajr
+        default:
+          return tomorrowFajr;
+      }
     }
 
     return Expanded(
@@ -147,7 +158,6 @@ class PrayerTimesCard extends StatelessWidget {
     );
   }
 
-  // This widget now shows a time range (start - end)
   Widget _prayerRow(String name, DateTime startTime, DateTime endTime, {bool isActive = false}) {
     final format = DateFormat.jm();
     final timeRange = '${format.format(startTime)} - ${format.format(endTime)}';
