@@ -36,6 +36,7 @@ class _HomeContentState extends State<HomeContent> {
 
   void _updateAllData() {
     final myCoordinates = Coordinates(22.62, 90.25); // Garuria Union
+
     final params = CalculationMethod.karachi.getParameters();
     params.madhab = Madhab.hanafi;
     params.highLatitudeRule = HighLatitudeRule.twilight_angle;
@@ -57,11 +58,13 @@ class _HomeContentState extends State<HomeContent> {
 
   void _updatePrayerProgressAndCountdown() {
     if (_prayerTimes == null) return;
+
     final now = DateTime.now();
     _currentPrayer = _prayerTimes!.currentPrayer();
     final nextPrayer = _prayerTimes!.nextPrayer();
 
     _currentPrayerName = _getPrayerNameInBengali(_currentPrayer);
+
     DateTime? startTime = _prayerTimes!.timeForPrayer(_currentPrayer);
     DateTime? endTime;
 
@@ -96,6 +99,7 @@ class _HomeContentState extends State<HomeContent> {
     } else {
       _prayerProgress = 0.0;
       _timeLeftToEnd = Duration.zero;
+
       if (nextPrayer != null) {
         _currentPrayer = nextPrayer;
         _currentPrayerName = 'পরবর্তী ${_getPrayerNameInBengali(nextPrayer)}';
@@ -129,70 +133,61 @@ class _HomeContentState extends State<HomeContent> {
       return const Center(child: CircularProgressIndicator());
     }
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final screenWidth = constraints.maxWidth;
-        final screenHeight = constraints.maxHeight;
-        final scale = (screenWidth / 400).clamp(0.8, 1.5);
-        final isTablet = screenWidth > 600;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final isTablet = screenWidth > 600;
 
-        return SafeArea(
-          child: SingleChildScrollView(
-            padding: EdgeInsets.symmetric(
-              horizontal: 16 * scale,
-              vertical: 12 * scale,
+    return SafeArea(
+      child: SingleChildScrollView(
+        padding: EdgeInsets.symmetric(
+          horizontal: screenWidth * 0.04,
+          vertical: screenHeight * 0.015,
+        ),
+        child: Column(
+          children: [
+            const LocationBar(
+              country: 'বাংলাদেশ',
+              location: 'Garuria Union, Barisal',
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const LocationBar(
-                  country: 'বাংলাদেশ',
-                  location: 'Garuria Union, Barisal',
-                ),
-                SizedBox(height: 12 * scale),
-                Transform.scale(
-                  scale: scale,
-                  child: DateTimeBar(
-                    gregorianDate: _gregorianDate,
-                    hijriDate: _hijriDate,
-                    sunriseTime: DateFormat.jm().format(_prayerTimes!.sunrise),
-                    sunsetTime: DateFormat.jm()
-                        .format(_prayerTimes!.maghrib.subtract(const Duration(minutes: 2))),
-                  ),
-                ),
-                SizedBox(height: 16 * scale),
-                Transform.scale(
-                  scale: scale,
-                  child: PrayerTimesCard(
-                    prayerTimes: _prayerTimes!,
-                    currentPrayer: _currentPrayer,
-                    currentPrayerName: _currentPrayerName,
-                    timeLeftToEnd: _formatDuration(_timeLeftToEnd),
-                    prayerProgress: _prayerProgress,
-                    tomorrowFajr: _tomorrowFajr!,
-                  ),
-                ),
-                SizedBox(height: 20 * scale),
-                _buildInfoCardsGrid(isTablet, screenWidth, scale),
-                _buildSehriIftarRow(screenWidth, scale),
-              ],
+            SizedBox(height: screenHeight * 0.015),
+            DateTimeBar(
+              gregorianDate: _gregorianDate,
+              hijriDate: _hijriDate,
+              sunriseTime: DateFormat.jm().format(_prayerTimes!.sunrise),
+              sunsetTime: DateFormat.jm().format(_prayerTimes!.maghrib.subtract(const Duration(minutes: 2))),
             ),
-          ),
-        );
-      },
+            SizedBox(height: screenHeight * 0.02),
+            ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: screenWidth * 0.95),
+              child: PrayerTimesCard(
+                prayerTimes: _prayerTimes!,
+                currentPrayer: _currentPrayer,
+                currentPrayerName: _currentPrayerName,
+                timeLeftToEnd: _formatDuration(_timeLeftToEnd),
+                prayerProgress: _prayerProgress,
+                tomorrowFajr: _tomorrowFajr!,
+              ),
+            ),
+            SizedBox(height: screenHeight * 0.025),
+            _buildInfoCardsGrid(isTablet, screenWidth),
+            _buildSehriIftarRow(screenWidth, screenHeight),
+          ],
+        ),
+      ),
     );
   }
 
-  Widget _buildInfoCardsGrid(bool isTablet, double screenWidth, double scale) {
+  Widget _buildInfoCardsGrid(bool isTablet, double screenWidth) {
     final crossAxisCount = isTablet ? 3 : 2;
+
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 8 * scale),
+      padding: EdgeInsets.symmetric(vertical: screenWidth * 0.03),
       child: GridView.count(
         crossAxisCount: crossAxisCount,
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
-        crossAxisSpacing: 12 * scale,
-        mainAxisSpacing: 12 * scale,
+        crossAxisSpacing: screenWidth * 0.03,
+        mainAxisSpacing: screenWidth * 0.03,
         childAspectRatio: isTablet ? 2.2 : 1.7,
         children: const [
           InfoCard(
@@ -208,17 +203,16 @@ class _HomeContentState extends State<HomeContent> {
     );
   }
 
-  Widget _buildSehriIftarRow(double screenWidth, double scale) {
+  Widget _buildSehriIftarRow(double screenWidth, double screenHeight) {
     String iftarTime = DateFormat.jm().format(_prayerTimes!.maghrib);
-    String sehriTime =
-        DateFormat.jm().format(_prayerTimes!.fajr.subtract(const Duration(minutes: 10)));
+    String sehriTime = DateFormat.jm().format(_prayerTimes!.fajr.subtract(const Duration(minutes: 10)));
 
     return Padding(
-      padding: EdgeInsets.only(bottom: 16 * scale),
+      padding: EdgeInsets.only(bottom: screenHeight * 0.02),
       child: Row(
         children: [
           Expanded(child: InfoCard.sehriIftar(title: 'সাহরির শেষ', time: sehriTime)),
-          SizedBox(width: 12 * scale),
+          SizedBox(width: screenWidth * 0.03),
           Expanded(child: InfoCard.sehriIftar(title: 'আজকের ইফতার', time: iftarTime)),
         ],
       ),
