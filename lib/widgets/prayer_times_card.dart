@@ -1,19 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:adhan/adhan.dart';
 import 'package:intl/intl.dart';
+import 'dart:math' as math;
 
 class PrayerTimesCard extends StatelessWidget {
+  // These are the updated parameters for the progress bar functionality
   final PrayerTimes prayerTimes;
   final Prayer currentPrayer;
-  final String nextPrayerName;
-  final String timeLeft;
+  final String currentPrayerName;
+  final String timeLeftToEnd;
+  final double prayerProgress;
+  final DateTime tomorrowFajr;
 
   const PrayerTimesCard({
     super.key,
     required this.prayerTimes,
     required this.currentPrayer,
-    required this.nextPrayerName,
-    required this.timeLeft,
+    required this.currentPrayerName,
+    required this.timeLeftToEnd,
+    required this.prayerProgress,
+    required this.tomorrowFajr,
   });
 
   @override
@@ -37,17 +43,16 @@ class PrayerTimesCard extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              _buildCountdownTimer(),
+              _buildProgressIndicator(),
               const SizedBox(width: 16),
               _buildPrayerList(),
             ],
           ),
           const SizedBox(height: 16),
           const Divider(),
-          // --- THIS IS THE MISSING WIDGET THAT WAS ADDED BACK ---
           const Row(
             mainAxisAlignment: MainAxisAlignment.center,
-            children:[
+            children: [
               Icon(Icons.calendar_today, color: Color(0xFF1D9375), size: 18),
               SizedBox(width: 8),
               Text(
@@ -64,55 +69,89 @@ class PrayerTimesCard extends StatelessWidget {
     );
   }
 
-  Widget _buildCountdownTimer() {
-    // ... (This function remains the same)
+  // This widget now builds the progress bar
+  Widget _buildProgressIndicator() {
     return Expanded(
       flex: 3,
       child: Column(
         children: [
           Text(
-            nextPrayerName,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            currentPrayerName,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1D9375)),
           ),
           const SizedBox(height: 4),
           const Text(
-            'শুরু হতে বাকি',
+            'শেষ হতে বাকি',
             style: TextStyle(color: Colors.grey, fontSize: 12),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 12),
-          Text(
-            timeLeft,
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF1D9375),
-            ),
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              SizedBox(
+                height: 80,
+                width: 80,
+                child: CircularProgressIndicator(
+                  value: 1.0,
+                  strokeWidth: 6,
+                  color: Colors.grey.shade200,
+                ),
+              ),
+              SizedBox(
+                height: 80,
+                width: 80,
+                child: Transform(
+                  alignment: Alignment.center,
+                  transform: Matrix4.rotationY(math.pi),
+                  child: CircularProgressIndicator(
+                    value: prayerProgress,
+                    strokeWidth: 6,
+                    color: const Color(0xFF1D9375),
+                  ),
+                ),
+              ),
+              Text(
+                timeLeftToEnd,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black54,
+                ),
+              ),
+            ],
           ),
         ],
       ),
     );
   }
 
+  // This widget now calculates and displays the end times
   Widget _buildPrayerList() {
-    // ... (This function remains the same)
-     return Expanded(
+    DateTime getEndTime(Prayer prayer) {
+      if (prayer == Prayer.isha) return tomorrowFajr;
+      return prayerTimes.timeForPrayer(prayerTimes.nextPrayer())!;
+    }
+
+    return Expanded(
       flex: 4,
       child: Column(
         children: [
-          _prayerRow('ফজর', prayerTimes.fajr, isActive: currentPrayer == Prayer.fajr),
-          _prayerRow('যোহর', prayerTimes.dhuhr, isActive: currentPrayer == Prayer.dhuhr),
-          _prayerRow('আসর', prayerTimes.asr, isActive: currentPrayer == Prayer.asr),
-          _prayerRow('মাগরিব', prayerTimes.maghrib, isActive: currentPrayer == Prayer.maghrib),
-          _prayerRow('ইশা', prayerTimes.isha, isActive: currentPrayer == Prayer.isha),
+          _prayerRow('ফজর', prayerTimes.fajr, getEndTime(Prayer.fajr), isActive: currentPrayer == Prayer.fajr),
+          _prayerRow('যোহর', prayerTimes.dhuhr, getEndTime(Prayer.dhuhr), isActive: currentPrayer == Prayer.dhuhr),
+          _prayerRow('আসর', prayerTimes.asr, getEndTime(Prayer.asr), isActive: currentPrayer == Prayer.asr),
+          _prayerRow('মাগরিব', prayerTimes.maghrib, getEndTime(Prayer.maghrib), isActive: currentPrayer == Prayer.maghrib),
+          _prayerRow('ইশা', prayerTimes.isha, getEndTime(Prayer.isha), isActive: currentPrayer == Prayer.isha),
         ],
       ),
     );
   }
 
-  Widget _prayerRow(String name, DateTime time, {bool isActive = false}) {
-    // ... (This function remains the same)
-    final formattedTime = DateFormat.jm().format(time);
+  // This widget now shows a time range (start - end)
+  Widget _prayerRow(String name, DateTime startTime, DateTime endTime, {bool isActive = false}) {
+    final format = DateFormat.jm();
+    final timeRange = '${format.format(startTime)} - ${format.format(endTime)}';
+
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 10.0),
       margin: const EdgeInsets.only(bottom: 4.0),
@@ -131,7 +170,7 @@ class PrayerTimesCard extends StatelessWidget {
             ),
           ),
           Text(
-            formattedTime,
+            timeRange,
             style: TextStyle(
               fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
               color: isActive ? const Color(0xFF1D9375) : Colors.black54,
