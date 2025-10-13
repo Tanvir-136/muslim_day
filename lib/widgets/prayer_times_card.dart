@@ -154,11 +154,11 @@ class PrayerTimesCard extends StatelessWidget {
 
     return Column(
       children: [
-        _prayerRow('ফজর', prayerTimes.fajr, getEndTime(Prayer.fajr), isActive: currentPrayer == Prayer.fajr),
-        _prayerRow('যোহর', prayerTimes.dhuhr, getEndTime(Prayer.dhuhr), isActive: currentPrayer == Prayer.dhuhr),
-        _prayerRow('আসর', prayerTimes.asr, getEndTime(Prayer.asr), isActive: currentPrayer == Prayer.asr),
-        _prayerRow('মাগরিব', prayerTimes.maghrib, getEndTime(Prayer.maghrib), isActive: currentPrayer == Prayer.maghrib),
-        _prayerRow('ইশা', prayerTimes.isha, getEndTime(Prayer.isha), isActive: currentPrayer == Prayer.isha),
+        _prayerRow('ফজর: ', prayerTimes.fajr, getEndTime(Prayer.fajr), isActive: currentPrayer == Prayer.fajr),
+        _prayerRow('যোহর: ', prayerTimes.dhuhr, getEndTime(Prayer.dhuhr), isActive: currentPrayer == Prayer.dhuhr),
+        _prayerRow('আসর: ', prayerTimes.asr, getEndTime(Prayer.asr), isActive: currentPrayer == Prayer.asr),
+        _prayerRow('মাগরিব: ', prayerTimes.maghrib, getEndTime(Prayer.maghrib), isActive: currentPrayer == Prayer.maghrib),
+        _prayerRow('ইশা: ', prayerTimes.isha, getEndTime(Prayer.isha), isActive: currentPrayer == Prayer.isha),
       ],
     );
   }
