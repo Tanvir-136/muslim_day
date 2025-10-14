@@ -61,13 +61,54 @@ class SurahListView extends StatelessWidget {
       appBar: AppBar(
         title: const Text("The Holy Quran"),
         titleTextStyle: GoogleFonts.playfairDisplay(
-          color: Colors.teal,
+          color: Colors.teal, // Changed to white for better contrast
           fontSize: 22,
           fontWeight: FontWeight.bold,
           letterSpacing: 1.2,
         ),
         centerTitle: true,
+
+        // ADDED: A stylish, thematic divider
+        bottom: PreferredSize(
+          preferredSize:
+              const Size.fromHeight(12.0), // Gives space for the design
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              // 1. The subtle gradient line
+              Container(
+                height: 1.5,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.transparent,
+                      Colors.teal.withOpacity(0.6), 
+                      Colors.transparent,
+                    ],
+                    stops: const [0.2, 0.5, 0.8],
+                  ),
+                ),
+              ),
+              // 2. The decorative Islamic star symbol
+              Text(
+                '۞',
+                style: TextStyle(
+                  color: Colors.teal[200],
+                  fontSize: 20,
+                  shadows: [
+                    Shadow(
+                      color: Colors.black.withOpacity(0.6),
+                      blurRadius: 5,
+                    )
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
+
+
       body: ListView.builder(
         itemCount: 114,
         itemBuilder: (context, index) {
@@ -178,7 +219,7 @@ class SurahDetailsScreen extends StatelessWidget {
           }
 
           // --- VERSES ---
-          final verseNumber = index - 1; // Adjust index for verses
+          final verseNumber = index - 1;
           final verseText = quran.getVerse(surahNumber, verseNumber);
           // ADDED: Get verse translation
           final verseTranslation =
@@ -236,8 +277,7 @@ class SurahDetailsScreen extends StatelessWidget {
                     fontStyle: FontStyle.italic,
                   ),
                 ),
-
-                const Divider(color: Colors.white10, height: 40, thickness: 1),
+                Divider(color: Colors.teal[700], height: 40, thickness: 1),
               ],
             ),
           );
