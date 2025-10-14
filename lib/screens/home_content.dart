@@ -4,12 +4,13 @@ import 'package:adhan/adhan.dart';
 import 'package:hijri/hijri_calendar.dart';
 import 'dart:async';
 
-// Custom widgets
+// Import your custom widgets
 import '../widgets/location_bar.dart';
 import '../widgets/date_time_bar.dart';
 import '../widgets/prayer_times_card.dart';
 import '../widgets/info_card.dart';
 
+// This widget contains the entire UI and logic for your main prayer times screen
 class HomeContent extends StatefulWidget {
   const HomeContent({super.key});
 
@@ -36,83 +37,60 @@ class _HomeContentState extends State<HomeContent> {
 
   void _updateAllData() {
     final myCoordinates = Coordinates(22.62, 90.25); // Garuria Union
-
     final params = CalculationMethod.karachi.getParameters();
     params.madhab = Madhab.hanafi;
-    params.highLatitudeRule = HighLatitudeRule.twilight_angle;
-
     final date = DateComponents.from(DateTime.now());
-    _prayerTimes = PrayerTimes(myCoordinates, date, params);
 
+    _prayerTimes = PrayerTimes(myCoordinates, date, params);
+    
     final tomorrowDate = DateComponents.from(DateTime.now().add(const Duration(days: 1)));
     _tomorrowFajr = PrayerTimes(myCoordinates, tomorrowDate, params).fajr;
 
     _hijriDate = HijriCalendar.now().toFormat("d MMMM, yyyy");
     _gregorianDate = DateFormat('d MMMM, EEEE', 'bn_BD').format(DateTime.now());
 
-    _updatePrayerProgressAndCountdown();
+    _updatePrayerProgressAndCountdown(); 
     _startTimer();
 
     if (mounted) setState(() {});
   }
-
+  
   void _updatePrayerProgressAndCountdown() {
     if (_prayerTimes == null) return;
-
+    
     final now = DateTime.now();
     _currentPrayer = _prayerTimes!.currentPrayer();
-    final nextPrayer = _prayerTimes!.nextPrayer();
-
     _currentPrayerName = _getPrayerNameInBengali(_currentPrayer);
-
+    
     DateTime? startTime = _prayerTimes!.timeForPrayer(_currentPrayer);
-    DateTime? endTime;
+    // FIXED: Passed the current prayer to correctly find the next one
+    DateTime? endTime = _prayerTimes!.timeForPrayer(_prayerTimes!.nextPrayer());
 
-    switch (_currentPrayer) {
-      case Prayer.fajr:
-        endTime = _prayerTimes!.sunrise;
-        break;
-      case Prayer.sunrise:
-        endTime = _prayerTimes!.dhuhr;
-        break;
-      case Prayer.dhuhr:
-        endTime = _prayerTimes!.asr;
-        break;
-      case Prayer.asr:
-        endTime = _prayerTimes!.maghrib;
-        break;
-      case Prayer.maghrib:
-        endTime = _prayerTimes!.isha;
-        break;
-      case Prayer.isha:
-        endTime = _tomorrowFajr;
-        break;
-      default:
-        endTime = _prayerTimes!.fajr;
+    if (_currentPrayer == Prayer.isha) {
+      endTime = _tomorrowFajr;
     }
-
+    
     if (startTime != null && endTime != null && now.isAfter(startTime) && now.isBefore(endTime)) {
       final totalDuration = endTime.difference(startTime);
-      final elapsed = now.difference(startTime);
-      _prayerProgress = elapsed.inSeconds / totalDuration.inSeconds;
+      final elapsedDuration = now.difference(startTime);
+      
+      _prayerProgress = elapsedDuration.inSeconds / totalDuration.inSeconds;
       _timeLeftToEnd = endTime.difference(now);
     } else {
       _prayerProgress = 0.0;
       _timeLeftToEnd = Duration.zero;
-
-      if (nextPrayer != null) {
-        _currentPrayer = nextPrayer;
-        _currentPrayerName = 'পরবর্তী ${_getPrayerNameInBengali(nextPrayer)}';
-      } else {
-        _currentPrayerName = 'পরবর্তী ফজর';
-      }
+      _currentPrayerName = 'পরবর্তী'; 
     }
   }
 
   void _startTimer() {
     _timer?.cancel();
-    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (mounted) setState(_updatePrayerProgressAndCountdown);
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (mounted) {
+        setState(() {
+          _updatePrayerProgressAndCountdown();
+        });
+      }
     });
   }
 
@@ -124,7 +102,10 @@ class _HomeContentState extends State<HomeContent> {
 
   String _formatDuration(Duration duration) {
     String twoDigits(int n) => n.toString().padLeft(2, '0');
-    return "${twoDigits(duration.inHours)}:${twoDigits(duration.inMinutes.remainder(60))}:${twoDigits(duration.inSeconds.remainder(60))}";
+    String hours = twoDigits(duration.inHours);
+    String minutes = twoDigits(duration.inMinutes.remainder(60));
+    String seconds = twoDigits(duration.inSeconds.remainder(60));
+    return "$hours:$minutes:$seconds";
   }
 
   @override
@@ -133,62 +114,46 @@ class _HomeContentState extends State<HomeContent> {
       return const Center(child: CircularProgressIndicator());
     }
 
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
-    final isTablet = screenWidth > 600;
-
     return SafeArea(
       child: SingleChildScrollView(
-        padding: EdgeInsets.symmetric(
-          horizontal: screenWidth * 0.04,
-          vertical: screenHeight * 0.015,
-        ),
         child: Column(
           children: [
             const LocationBar(
-              country: 'বাংলাদেশ',
+              country:' ',
               location: 'Garuria Union, Barisal',
             ),
-            SizedBox(height: screenHeight * 0.015),
             DateTimeBar(
               gregorianDate: _gregorianDate,
               hijriDate: _hijriDate,
               sunriseTime: DateFormat.jm().format(_prayerTimes!.sunrise),
               sunsetTime: DateFormat.jm().format(_prayerTimes!.maghrib.subtract(const Duration(minutes: 2))),
             ),
-            SizedBox(height: screenHeight * 0.02),
-            ConstrainedBox(
-              constraints: BoxConstraints(maxWidth: screenWidth * 0.95),
-              child: PrayerTimesCard(
-                prayerTimes: _prayerTimes!,
-                currentPrayer: _currentPrayer,
-                currentPrayerName: _currentPrayerName,
-                timeLeftToEnd: _formatDuration(_timeLeftToEnd),
-                prayerProgress: _prayerProgress,
-                tomorrowFajr: _tomorrowFajr!,
-              ),
+            PrayerTimesCard(
+              prayerTimes: _prayerTimes!,
+              currentPrayer: _currentPrayer,
+              currentPrayerName: _currentPrayerName,
+              timeLeftToEnd: _formatDuration(_timeLeftToEnd),
+              prayerProgress: _prayerProgress,
+              tomorrowFajr: _tomorrowFajr!,
             ),
-            SizedBox(height: screenHeight * 0.025),
-            _buildInfoCardsGrid(isTablet, screenWidth),
-            _buildSehriIftarRow(screenWidth, screenHeight),
+            _buildInfoCardsGrid(),
+            _buildSehriIftarRow(),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildInfoCardsGrid(bool isTablet, double screenWidth) {
-    final crossAxisCount = isTablet ? 3 : 2;
-
+  Widget _buildInfoCardsGrid() {
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: screenWidth * 0.03),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
       child: GridView.count(
-        crossAxisCount: crossAxisCount,
+        crossAxisCount: 2,
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
-        crossAxisSpacing: screenWidth * 0.03,
-        mainAxisSpacing: screenWidth * 0.03,
-        childAspectRatio: isTablet ? 2.2 : 1.7,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
+        childAspectRatio: 1.8,
         children: const [
           InfoCard(
             title: 'সালাতের নিষিদ্ধ সময়',
@@ -203,16 +168,16 @@ class _HomeContentState extends State<HomeContent> {
     );
   }
 
-  Widget _buildSehriIftarRow(double screenWidth, double screenHeight) {
+  Widget _buildSehriIftarRow() {
     String iftarTime = DateFormat.jm().format(_prayerTimes!.maghrib);
     String sehriTime = DateFormat.jm().format(_prayerTimes!.fajr.subtract(const Duration(minutes: 10)));
 
     return Padding(
-      padding: EdgeInsets.only(bottom: screenHeight * 0.02),
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
       child: Row(
         children: [
           Expanded(child: InfoCard.sehriIftar(title: 'সাহরির শেষ', time: sehriTime)),
-          SizedBox(width: screenWidth * 0.03),
+          const SizedBox(width: 12),
           Expanded(child: InfoCard.sehriIftar(title: 'আজকের ইফতার', time: iftarTime)),
         ],
       ),
@@ -221,20 +186,13 @@ class _HomeContentState extends State<HomeContent> {
 
   String _getPrayerNameInBengali(Prayer prayer) {
     switch (prayer) {
-      case Prayer.fajr:
-        return 'ফজর';
-      case Prayer.sunrise:
-        return 'সূর্যোদয়';
-      case Prayer.dhuhr:
-        return 'যোহর';
-      case Prayer.asr:
-        return 'আসর';
-      case Prayer.maghrib:
-        return 'মাগরিব';
-      case Prayer.isha:
-        return 'ইশা';
-      default:
-        return '';
+      case Prayer.fajr: return 'ফজর';
+      case Prayer.sunrise: return 'সূর্যোদয়';
+      case Prayer.dhuhr: return 'যোহর';
+      case Prayer.asr: return 'আসর';
+      case Prayer.maghrib: return 'মাগরিব';
+      case Prayer.isha: return 'ইশা';
+      default: return 'পরবর্তী';
     }
   }
 }
