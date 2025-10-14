@@ -32,6 +32,7 @@ class PrayerTimesCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
+            // ignore: deprecated_member_use
             color: Colors.grey.withOpacity(0.1),
             spreadRadius: 2,
             blurRadius: 5,
@@ -166,6 +167,7 @@ class PrayerTimesCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 4.0),
       decoration: BoxDecoration(
         color: isActive
+            // ignore: deprecated_member_use
             ? const Color(0xFF1D9375).withOpacity(0.1)
             : Colors.transparent,
         borderRadius: BorderRadius.circular(8),
