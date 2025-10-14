@@ -32,7 +32,6 @@ class PrayerTimesCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            // ignore: deprecated_member_use
             color: Colors.grey.withOpacity(0.1),
             spreadRadius: 2,
             blurRadius: 5,
@@ -42,8 +41,10 @@ class PrayerTimesCard extends StatelessWidget {
       child: Column(
         children: [
           Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
+            // Aligning to the top makes the layout look cleaner
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // The Expanded widgets are now here to control the main layout
               _buildProgressIndicator(),
               const SizedBox(width: 16),
               _buildPrayerList(),
@@ -72,6 +73,7 @@ class PrayerTimesCard extends StatelessWidget {
 
   // This widget now builds the progress bar
   Widget _buildProgressIndicator() {
+    // CORRECTED: The flex ratio is adjusted to give this section less space
     return Expanded(
       flex: 3,
       child: Column(
@@ -82,6 +84,7 @@ class PrayerTimesCard extends StatelessWidget {
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
                 color: Color(0xFF1D9375)),
+            textAlign: TextAlign.center,
           ),
           const SizedBox(height: 4),
           const Text(
@@ -137,19 +140,20 @@ class PrayerTimesCard extends StatelessWidget {
       return prayerTimes.timeForPrayer(prayerTimes.nextPrayer())!;
     }
 
+    // CORRECTED: The flex ratio is adjusted to give this section MORE space
     return Expanded(
-      flex: 4,
+      flex: 5,
       child: Column(
         children: [
-          _prayerRow('ফজর: ', prayerTimes.fajr, getEndTime(Prayer.fajr),
+          _prayerRow('ফজর:', prayerTimes.fajr, getEndTime(Prayer.fajr),
               isActive: currentPrayer == Prayer.fajr),
-          _prayerRow('যোহর: ', prayerTimes.dhuhr, getEndTime(Prayer.dhuhr),
+          _prayerRow('যোহর:', prayerTimes.dhuhr, getEndTime(Prayer.dhuhr),
               isActive: currentPrayer == Prayer.dhuhr),
-          _prayerRow('আসর: ', prayerTimes.asr, getEndTime(Prayer.asr),
+          _prayerRow('আসর:', prayerTimes.asr, getEndTime(Prayer.asr),
               isActive: currentPrayer == Prayer.asr),
-          _prayerRow('মাগরিব: ', prayerTimes.maghrib, getEndTime(Prayer.maghrib),
+          _prayerRow('মাগরিব:', prayerTimes.maghrib, getEndTime(Prayer.maghrib),
               isActive: currentPrayer == Prayer.maghrib),
-          _prayerRow('ইশা: ', prayerTimes.isha, getEndTime(Prayer.isha),
+          _prayerRow('ইশা:', prayerTimes.isha, getEndTime(Prayer.isha),
               isActive: currentPrayer == Prayer.isha),
         ],
       ),
@@ -167,13 +171,11 @@ class PrayerTimesCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 4.0),
       decoration: BoxDecoration(
         color: isActive
-            // ignore: deprecated_member_use
             ? const Color(0xFF1D9375).withOpacity(0.1)
             : Colors.transparent,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
             name,
@@ -182,12 +184,21 @@ class PrayerTimesCard extends StatelessWidget {
               color: isActive ? const Color(0xFF1D9375) : Colors.black87,
             ),
           ),
-          Text(
-            timeRange,
-            style: TextStyle(
-              fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
-              color: isActive ? const Color(0xFF1D9375) : Colors.black54,
-              fontSize: 12,
+          const SizedBox(width: 8),
+
+          // --- CORRECTED: FittedBox has been removed ---
+          // The Text widget is now inside a simple Expanded.
+          Expanded(
+            child: Text(
+              timeRange,
+              textAlign: TextAlign.right, 
+              softWrap: false,
+              overflow: TextOverflow.clip,
+              style: TextStyle(
+                fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+                color: isActive ? const Color(0xFF1D9375) : Colors.black54,
+                fontSize: 12,
+              ),
             ),
           ),
         ],
