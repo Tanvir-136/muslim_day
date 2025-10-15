@@ -32,7 +32,8 @@ class PrayerTimesCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            // replaced withAlpha to avoid deprecation of withOpacity
+            color: Colors.grey.withAlpha(26),
             spreadRadius: 2,
             blurRadius: 5,
           ),
@@ -112,7 +113,10 @@ class PrayerTimesCard extends StatelessWidget {
                   alignment: Alignment.center,
                   transform: Matrix4.rotationY(math.pi),
                   child: CircularProgressIndicator(
-                    value: prayerProgress,
+                    // Safely clamp the progress to [0,1] and handle non-finite values
+                    value: (prayerProgress.isFinite
+                        ? prayerProgress.clamp(0.0, 1.0)
+                        : 0.0),
                     strokeWidth: 6,
                     color: const Color(0xFF1D9375),
                   ),
@@ -136,24 +140,51 @@ class PrayerTimesCard extends StatelessWidget {
   // This widget now calculates and displays the end times
   Widget _buildPrayerList() {
     DateTime getEndTime(Prayer prayer) {
-      if (prayer == Prayer.isha) return tomorrowFajr;
-      return prayerTimes.timeForPrayer(prayerTimes.nextPrayer())!;
+      // Map each prayer to its next prayer; isha ends at tomorrow's fajr (provided)
+      switch (prayer) {
+        case Prayer.fajr:
+          final DateTime? next = prayerTimes.timeForPrayer(Prayer.dhuhr);
+          return next ?? DateTime.now();
+        case Prayer.dhuhr:
+          final DateTime? next = prayerTimes.timeForPrayer(Prayer.asr);
+          return next ?? DateTime.now();
+        case Prayer.asr:
+          final DateTime? next = prayerTimes.timeForPrayer(Prayer.maghrib);
+          return next ?? DateTime.now();
+        case Prayer.maghrib:
+          final DateTime? next = prayerTimes.timeForPrayer(Prayer.isha);
+          return next ?? DateTime.now();
+        case Prayer.isha:
+          // Isha ends at tomorrow's fajr
+          return tomorrowFajr;
+        // handle other possible enum values
+        case Prayer.sunrise:
+        case Prayer.none:
+        default:
+          return DateTime.now();
+      }
     }
+    // collect start times
+    final fajrStart = prayerTimes.timeForPrayer(Prayer.fajr);
+    final dhuhrStart = prayerTimes.timeForPrayer(Prayer.dhuhr);
+    final asrStart = prayerTimes.timeForPrayer(Prayer.asr);
+    final maghribStart = prayerTimes.timeForPrayer(Prayer.maghrib);
+    final ishaStart = prayerTimes.timeForPrayer(Prayer.isha);
 
     // CORRECTED: The flex ratio is adjusted to give this section MORE space
     return Expanded(
       flex: 5,
       child: Column(
         children: [
-          _prayerRow('ফজর:', prayerTimes.fajr, getEndTime(Prayer.fajr),
+          _prayerRow('ফজর:', fajrStart, getEndTime(Prayer.fajr),
               isActive: currentPrayer == Prayer.fajr),
-          _prayerRow('যোহর:', prayerTimes.dhuhr, getEndTime(Prayer.dhuhr),
+          _prayerRow('জোহর:', dhuhrStart, getEndTime(Prayer.dhuhr),
               isActive: currentPrayer == Prayer.dhuhr),
-          _prayerRow('আসর:', prayerTimes.asr, getEndTime(Prayer.asr),
+          _prayerRow('আছর:', asrStart, getEndTime(Prayer.asr),
               isActive: currentPrayer == Prayer.asr),
-          _prayerRow('মাগরিব:', prayerTimes.maghrib, getEndTime(Prayer.maghrib),
+          _prayerRow('মাগরিব:', maghribStart, getEndTime(Prayer.maghrib),
               isActive: currentPrayer == Prayer.maghrib),
-          _prayerRow('ইশা:', prayerTimes.isha, getEndTime(Prayer.isha),
+          _prayerRow('ইশা:', ishaStart, getEndTime(Prayer.isha),
               isActive: currentPrayer == Prayer.isha),
         ],
       ),
@@ -161,17 +192,20 @@ class PrayerTimesCard extends StatelessWidget {
   }
 
   // This widget now shows a time range (start - end)
-  Widget _prayerRow(String name, DateTime startTime, DateTime endTime,
+  Widget _prayerRow(String name, DateTime? startTime, DateTime? endTime,
       {bool isActive = false}) {
     final format = DateFormat.jm();
-    final timeRange = '${format.format(startTime)} - ${format.format(endTime)}';
+    final String startStr =
+        startTime != null ? format.format(startTime) : '--:--';
+    final String endStr = endTime != null ? format.format(endTime) : '--:--';
+    final timeRange = '$startStr - $endStr';
 
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 10.0),
       margin: const EdgeInsets.only(bottom: 4.0),
       decoration: BoxDecoration(
         color: isActive
-            ? const Color(0xFF1D9375).withOpacity(0.1)
+            ? const Color(0x1A1D9375) // 10% alpha of 0xFF1D9375
             : Colors.transparent,
         borderRadius: BorderRadius.circular(8),
       ),
@@ -185,15 +219,12 @@ class PrayerTimesCard extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-
-          // --- CORRECTED: FittedBox has been removed ---
-          // The Text widget is now inside a simple Expanded.
           Expanded(
             child: Text(
               timeRange,
-              textAlign: TextAlign.right, 
+              textAlign: TextAlign.right,
               softWrap: false,
-              overflow: TextOverflow.clip,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
                 color: isActive ? const Color(0xFF1D9375) : Colors.black54,
