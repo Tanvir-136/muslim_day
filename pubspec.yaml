@@ -19,6 +19,8 @@ dependencies:
   hijri: ^3.0.0
   geocoding: ^2.1.0 
   quran: ^1.2.4
+  shared_preferences: ^2.2.3
+  provider: ^6.0.5
   google_fonts: ^6.2.1
 
 dev_dependencies:

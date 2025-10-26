@@ -1,288 +1,217 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import 'package:quran/quran.dart' as quran;
 
-// Define a consistent font size for the large Arabic text
-const double _arabicTextSize = 28.0;
+// !! New import: We are importing our Bengali data file
+import '../data/bengali_surah_data.dart';
+import '../providers/quran_settings.dart';
+import 'quran_settings.dart'; // For the settings icon
+import 'surah_details_screen.dart';
 
-// --- CUSTOM ARBIC NUMBER CONVERSION HELPER ---
-String _getArabicNumber(int number) {
-  const Map<String, String> arabicMap = {
-    '0': '٠',
-    '1': '١',
-    '2': '٢',
-    '3': '٣',
-    '4': '٤',
-    '5': '٥',
-    '6': '٦',
-    '7': '٧',
-    '8': '٨',
-    '9': '٩'
+/// Custom helper function that converts English numbers to Bengali numbers.
+String _getBengaliNumber(int number) {
+  const Map<String, String> bengaliMap = {
+    '0': '০',
+    '1': '১',
+    '2': '২',
+    '3': '৩',
+    '4': '৪',
+    '5': '৫',
+    '6': '৬',
+    '7': '৭',
+    '8': '৮',
+    '9': '৯'
   };
   return number
       .toString()
       .split('')
-      .map((char) => arabicMap[char] ?? char)
+      .map((char) => bengaliMap[char] ?? char)
       .join();
 }
 
-void main() {
-  runApp(
-    MaterialApp(
-      title: 'The Holy Quran',
-      theme: ThemeData(
-        // brightness: Brightness.dark,
-        primarySwatch: Colors.teal,
-        fontFamily: GoogleFonts.lato().fontFamily,
-        appBarTheme: AppBarTheme(
-          backgroundColor: const Color(0xFF1E1E1E),
-          elevation: 4,
-          titleTextStyle: GoogleFonts.playfairDisplay(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-            letterSpacing: 1.2,
-          ),
-        ),
-        scaffoldBackgroundColor: const Color(0xFF121212),
-      ),
-      home: const SurahListView(),
-    ),
-  );
-}
-
-/// --- Surah List View ---
-class SurahListView extends StatelessWidget {
-  const SurahListView({super.key});
+/// This is the main screen for your Quran section, now with tabs.
+class QuranScreen extends StatelessWidget {
+  const QuranScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("The Holy Quran"),
-        titleTextStyle: GoogleFonts.playfairDisplay(
-          color: Colors.teal, // Changed to white for better contrast
-          fontSize: 22,
-          fontWeight: FontWeight.bold,
-          letterSpacing: 1.2,
-        ),
-        centerTitle: true,
-
-        // ADDED: A stylish, thematic divider
-        bottom: PreferredSize(
-          preferredSize:
-              const Size.fromHeight(12.0), // Gives space for the design
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              // 1. The subtle gradient line
-              Container(
-                height: 1.5,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Colors.transparent,
-                      Colors.teal.withOpacity(0.6), 
-                      Colors.transparent,
-                    ],
-                    stops: const [0.2, 0.5, 0.8],
-                  ),
-                ),
-              ),
-              // 2. The decorative Islamic star symbol
-              Text(
-                '۞',
-                style: TextStyle(
-                  color: Colors.teal[200],
-                  fontSize: 20,
-                  shadows: [
-                    Shadow(
-                      color: Colors.black.withOpacity(0.6),
-                      blurRadius: 5,
-                    )
-                  ],
-                ),
-              ),
+    // We are using DefaultTabController to manage the three tabs
+    return DefaultTabController(
+      length: 2, // "আল-কুরআন", "বুকমার্কস",
+      child: Scaffold(
+        // অ্যাপবারটি এখন সাদা রঙের, স্ক্রিনশটের সাথে মিল রেখে
+        appBar: AppBar(
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          elevation: 1,
+          // পেছনের অ্যারো বাটন
+          // leading: IconButton(
+          //   icon: Icon(Icons.arrow_back, color: Colors.grey[800]),
+          //   onPressed: () {
+          //     // দেখুন এই স্ক্রিনটি স্ট্যাকের প্রথম কিনা
+          //     if (Navigator.canPop(context)) {
+          //       Navigator.pop(context);
+          //     }
+          //   },
+          // ),
+          // বাংলা শিরোনাম
+          title: Text(
+            "আল-কুরআন",
+            style: GoogleFonts.notoSansBengali(
+              color: Colors.black,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          iconTheme: IconThemeData(color: Colors.grey[800]),
+          actions: [
+            // ফিল্টার/সেটিংস আইকন
+            IconButton(
+              icon: const Icon(Icons.settings), // ফিল্টার আইকন
+              onPressed: () {
+                // আমরা এটাকে আপনার তৈরি করা SettingsPage এর সাথে লিঙ্ক করছি
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const SettingsPage()),
+                );
+              },
+            ),
+            // সামনের অ্যারো আইকন
+            // IconButton(
+            //   icon: const Icon(Icons.arrow_forward),
+            //   onPressed: () {
+            //     // এই বাটনের জন্য নেভিগেশন যোগ করুন
+            //   },
+            // ),
+          ],
+          // ২টি বিভাগের জন্য TabBar
+          bottom: TabBar(
+            labelColor: Colors.teal, // Active tab color
+            unselectedLabelColor: Colors.grey[600], // Inactive tab color
+            indicatorColor: Colors.teal,
+            indicatorWeight: 3,
+            labelStyle: GoogleFonts.notoSansBengali(
+              fontWeight: FontWeight.bold,
+              fontSize: 15,
+            ),
+            tabs: const [
+              Tab(text: "আল-কুরআন"),
+              Tab(text: "বুকমার্কস"),
             ],
           ),
         ),
-      ),
+        // TabBarView প্রতিটি ট্যাবের কন্টেন্ট ধারণ করে
+        body: TabBarView(
+          children: [
+            // --- ট্যাব ১: সূরা তালিকা ---
+            _buildSurahListTab(context),
 
-
-      body: ListView.builder(
-        itemCount: 114,
-        itemBuilder: (context, index) {
-          final surahNumber = index + 1;
-          final englishName = quran.getSurahNameEnglish(surahNumber);
-          final arabicName = quran.getSurahName(surahNumber);
-          final revelationPlace = quran.getPlaceOfRevelation(surahNumber);
-
-          return ListTile(
-            leading: CircleAvatar(
-              backgroundColor: Colors.teal,
-              child: Text(
-                '$surahNumber',
-                style: const TextStyle(
-                    fontWeight: FontWeight.bold, color: Colors.white),
-              ),
+            // --- ট্যাব ২: বুকমার্কস (স্থানধারক) ---
+            const Center(
+              child: Text("বুকমার্কস", style: TextStyle(fontSize: 20)),
             ),
-            title: Text(
-              arabicName,
-              textAlign: TextAlign.left,
-              style: const TextStyle(
-                fontSize: 20.0,
-                // IMPORTANT: Your app uses a dark theme. Black text will be invisible.
-                // Consider changing this to `Colors.white`
-                color: Colors.black,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            subtitle: Text(
-              '$englishName | Verses: ${quran.getVerseCount(surahNumber)} | $revelationPlace',
-              style: const TextStyle(
-                color: Colors.teal,
-              ),
-            ),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => SurahDetailsScreen(
-                    surahNumber: surahNumber,
-                    surahNameEnglish: englishName,
-                    surahNameArabic: arabicName,
-                  ),
-                ),
-              );
-            },
-          );
-        },
+          ],
+        ),
       ),
     );
   }
-}
 
-/// --- Surah Details View ---
-class SurahDetailsScreen extends StatelessWidget {
-  final int surahNumber;
-  final String surahNameEnglish;
-  final String surahNameArabic;
+  /// এই উইজেটটি প্রথম ট্যাবের কন্টেন্ট তৈরি করে,
+  /// যার মধ্যে সার্চ বার এবং সূরা তালিকা রয়েছে।
+  Widget _buildSurahListTab(BuildContext context) {
+    final settings = Provider.of<QuranSettings>(context);
 
-  const SurahDetailsScreen({
-    super.key,
-    required this.surahNumber,
-    required this.surahNameEnglish,
-    required this.surahNameArabic,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final verseCount = quran.getVerseCount(surahNumber);
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('$surahNameEnglish ($surahNameArabic)'),
-        centerTitle: true,
-      ),
-      body: ListView.builder(
-        padding: const EdgeInsets.all(16.0),
-        itemCount: verseCount + 2, // +2 for header and Bismillah
-        itemBuilder: (context, index) {
-          // --- HEADER INFO ---
-          if (index == 0) {
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 20.0),
-              child: Text(
-                '${quran.getSurahNameEnglish(surahNumber)} | ${quran.getPlaceOfRevelation(surahNumber)} | Verses: $verseCount',
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 16, color: Colors.teal),
-              ),
-            );
-          }
-          // --- Bismillah ---
-          if (index == 1) {
-            if (surahNumber != 1 && surahNumber != 9) {
-              return const Padding(
-                padding: EdgeInsets.only(bottom: 20.0),
-                child: Text(
-                  quran.basmala,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 24,
-                    color: Colors.teal,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              );
-            }
-            return const SizedBox.shrink();
-          }
-
-          // --- VERSES ---
-          final verseNumber = index - 1;
-          final verseText = quran.getVerse(surahNumber, verseNumber);
-          // ADDED: Get verse translation
-          final verseTranslation =
-              quran.getVerseTranslation(surahNumber, verseNumber);
-
-          return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 20.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Arabic Verse
-                RichText(
-                  textDirection: TextDirection.rtl,
-                  textAlign: TextAlign.justify,
-                  text: TextSpan(
-                    style: DefaultTextStyle.of(context).style.copyWith(
-                          fontSize: _arabicTextSize,
-                          height: 2.0,
-                          color: Colors.black,
-                        ),
-                    children: [
-                      TextSpan(text: verseText),
-                      WidgetSpan(
-                        alignment: PlaceholderAlignment.middle,
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 10.0),
-                          padding: const EdgeInsets.all(4.0),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.teal, width: 2.0),
-                          ),
-                          child: Text(
-                            _getArabicNumber(verseNumber),
-                            style: const TextStyle(
-                              fontSize: _arabicTextSize * 0.75,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.tealAccent,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 8), // Spacing
-
-                // ADDED: English Translation Subtitle
-                Text(
-                  verseTranslation,
-                  textAlign: TextAlign.left,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    color: Colors.teal,
-                    fontStyle: FontStyle.italic,
-                  ),
-                ),
-                Divider(color: Colors.teal[700], height: 40, thickness: 1),
-              ],
+    return Column(
+      children: [
+        // --- সূরা তালিকা ---
+        Expanded(
+          child: ListView.separated(
+            itemCount: 114,
+            separatorBuilder: (context, index) => Divider(
+              height: 1,
+              indent: 80,
+              endIndent: 20,
+              color: Colors.grey[200],
             ),
-          );
-        },
-      ),
+            itemBuilder: (context, index) {
+              final surahNumber = index + 1;
+
+              // !! নতুন ডেটা: আমরা আমাদের bengali_surah_data ফাইল থেকে ডেটা নিচ্ছি
+              final bengaliData =
+                  bengaliSurahData[index]; // যেহেতু তালিকা 0-ভিত্তিক
+              final verseCount = quran.getVerseCount(surahNumber);
+              final arabicName = quran.getSurahName(surahNumber);
+
+              return ListTile(
+                // শুরুতে: বাংলা নম্বর সহ গোলাকার বর্গ
+                leading: Container(
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    color: Colors.teal.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    _getBengaliNumber(surahNumber),
+                    style: const TextStyle(
+                      color: Colors.teal,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+
+                // শিরোনাম: বাংলা নাম (আমাদের ডেটা ফাইল থেকে)
+                title: Text(
+                  bengaliData.name, // 'আল-ফাতিহা'
+                  style: GoogleFonts.notoSansBengali(
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black,
+                  ),
+                ),
+
+                // উপ-শিরোনাম: বাংলা অর্থ এবং আয়াত সংখ্যা
+                subtitle: Text(
+                  '${bengaliData.meaning} (${_getBengaliNumber(verseCount)})', // 'সূচনা (৭)'
+                  style: GoogleFonts.notoSansBengali(
+                    color: Colors.grey[600],
+                  ),
+                ),
+
+                // শেষে: আরবি নাম
+                trailing: Text(
+                  arabicName,
+                  style: TextStyle(
+                    fontFamily: settings.arabicFont, // From your settings
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.teal,
+                  ),
+                ),
+
+                onTap: () {
+                  // !! দ্রষ্টব্য: SurahDetailsScreen এখনও ইংরেজি নাম ব্যবহার করছে
+                  // অ্যাপবার শিরোনামের জন্য। তাই আমরা এটি পাস করছি।
+                  final englishName = quran.getSurahNameEnglish(surahNumber);
+
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => SurahDetailsScreen(
+                        surahNumber: surahNumber,
+                        surahNameEnglish: englishName,
+                        surahNameArabic: arabicName,
+                        surahNameBengali: bengaliData.name,
+                        surahNameMeaning: bengaliData.meaning,
+                      ),
+                    ),
+                  );
+                },
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 }

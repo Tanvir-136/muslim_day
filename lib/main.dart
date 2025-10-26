@@ -1,10 +1,16 @@
 import 'package:muslim_day/screens/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-// import 'package:screens/home_screen.dart';
+import 'package:provider/provider.dart';
+import 'providers/quran_settings.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => QuranSettings(),
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
