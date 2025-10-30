@@ -14,13 +14,11 @@ dependencies:
 
   cupertino_icons: ^1.0.2
   intl: ^0.20.2
-  geolocator: ^9.0.2
+  provider: ^6.1.2
+  shared_preferences: ^2.2.3
   adhan: ^2.0.0-nullsafety.2
   hijri: ^3.0.0
-  geocoding: ^2.1.0 
   quran: ^1.2.4
-  shared_preferences: ^2.2.3
-  provider: ^6.0.5
   google_fonts: ^6.2.1
 
 dev_dependencies:

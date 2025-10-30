@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'prayer_settings_page.dart';
 
 class MenuScreen extends StatelessWidget {
   const MenuScreen({super.key});
@@ -8,8 +10,14 @@ class MenuScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFF3F5F4),
       appBar: AppBar(
-        // We can reuse your LocationBar widget here if you prefer
-        title: const Text('Menu', style: TextStyle(color: Colors.black87)),
+        // অ্যাপবার আপডেট করা হয়েছে
+        title: Text(
+          'মেনু',
+          style: GoogleFonts.notoSansBengali(
+            color: Colors.black87,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         backgroundColor: Colors.white,
         centerTitle: true,
         elevation: 1,
@@ -18,7 +26,18 @@ class MenuScreen extends StatelessWidget {
         children: [
           // General Section
           _buildMenuItem(
-              icon: Icons.settings_outlined, title: 'সেটিংস', onTap: () {}),
+            icon: Icons.settings_outlined,
+            title: 'সেটিংস',
+            onTap: () {
+              // <-- ৩. নেভিগেশন যোগ করা হয়েছে
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const PrayerSettingsPage(),
+                ),
+              );
+            },
+          ),
           _buildMenuItem(
               icon: Icons.quiz_outlined,
               title: 'বহুল জিজ্ঞাসিত প্রশ্ন (FAQ)',
@@ -38,14 +57,14 @@ class MenuScreen extends StatelessWidget {
               onTap: () {}),
 
           // Knowledge Section
-          _buildSectionHeader('প্রয়োজনীয় ইলম'),
+          _buildSectionHeader('প্রয়োজনীয় ইলম'),
           _buildMenuItem(
               icon: Icons.book_outlined,
               title: 'কুরআন-হাদীস (নির্বাচিত অংশ)',
               onTap: () {}),
           _buildMenuItem(
               icon: Icons.web_stories_outlined,
-              title: 'মুসলিমস ডে ওয়েবসাইট',
+              title: 'মুসলিমস ডে ওয়েবসাইট',
               onTap: () {}),
           _buildMenuItem(
               icon: Icons.assignment_outlined,
@@ -66,7 +85,7 @@ class MenuScreen extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
       child: Text(
         title,
-        style: const TextStyle(
+        style: GoogleFonts.notoSansBengali( // <-- ফন্ট আপডেট করা হয়েছে
           color: Color(0xFF1D9375),
           fontWeight: FontWeight.bold,
           fontSize: 14,
@@ -86,7 +105,10 @@ class MenuScreen extends StatelessWidget {
         leading: Icon(icon, color: Colors.grey.shade600),
         title: Text(
           title,
-          style: const TextStyle(color: Colors.black),
+          style: GoogleFonts.notoSansBengali( // <-- ফন্ট আপডেট করা হয়েছে
+            color: Colors.black,
+            fontSize: 16,
+          ),
         ),
         trailing: Icon(Icons.chevron_right, color: Colors.grey.shade400),
         onTap: onTap,
@@ -94,3 +116,4 @@ class MenuScreen extends StatelessWidget {
     );
   }
 }
+

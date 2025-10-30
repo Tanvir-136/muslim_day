@@ -1,47 +1,60 @@
-import 'package:muslim_day/screens/home_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'providers/quran_settings.dart';
+import 'providers/prayer_settings.dart'; 
+import 'screens/home_screen.dart'; 
 
-void main() {
+// !! 1. Import the date formatting library
+import 'package:intl/date_symbol_data_local.dart';
+
+void main() async { 
+  // !! 3. Ensure Flutter is initialized before running async code
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // !! 4. THIS IS THE FIX: Load Bengali (bn_BD) locale datadata
+  await initializeDateFormatting('bn_BD', null);
+
+  // Wrap your app in MultiProvider
   runApp(
-    ChangeNotifierProvider(
-      create: (context) => QuranSettings(),
-      child: const MyApp(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => QuranSettings()),
+        ChangeNotifierProvider(create: (context) => PrayerSettings()),
+      ],
+      child: const MuslimDayApp(), // Your app
     ),
   );
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class MuslimDayApp extends StatelessWidget {
+  const MuslimDayApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Prayer Times',
-      debugShowCheckedModeBanner: false,
-      // Add localization delegates for Bangla date formatting
-      localizationsDelegates: const [
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: const [
-        Locale('en', ''), // English
-        Locale('bn', ''), // Bengali
-      ],
-      theme: ThemeData(
-        brightness: Brightness.dark,
-        scaffoldBackgroundColor: const Color(0xFFF3F5F7),
-        primaryColor: const Color(0xFF006A56),
-        fontFamily: 'HindSiliguri',
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Color(0xFFF3F5F7),
-          elevation: 0,
-        ),
-      ),
-      home: const HomeScreen(),
+    return Consumer<QuranSettings>(
+      builder: (context, settings, child) {
+        return MaterialApp(
+          title: 'Muslim Day',
+          theme: ThemeData(
+            primarySwatch: Colors.teal,
+            // Set the default app font to Bengali
+            fontFamily: GoogleFonts.notoSansBengali().fontFamily, 
+            appBarTheme: AppBarTheme(
+              backgroundColor: const Color(0xFF1A4D4D),
+              elevation: 4,
+              titleTextStyle: GoogleFonts.playfairDisplay(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+                letterSpacing: 1.2,
+              ),
+            ),
+            scaffoldBackgroundColor: const Color(0xFFF5F5F5),
+          ),
+          home: const HomeScreen(), 
+        );
+      },
     );
   }
 }

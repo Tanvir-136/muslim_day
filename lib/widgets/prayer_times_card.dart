@@ -4,13 +4,15 @@ import 'package:intl/intl.dart';
 import 'dart:math' as math;
 
 class PrayerTimesCard extends StatelessWidget {
-  // These are the updated parameters for the progress bar functionality
   final PrayerTimes prayerTimes;
   final Prayer currentPrayer;
   final String currentPrayerName;
   final String timeLeftToEnd;
   final double prayerProgress;
   final DateTime tomorrowFajr;
+  
+  // !! নতুন প্যারামিটার: নিষিদ্ধ সময় কিনা তা জানার জন্য
+  final bool isProhibitedTime;
 
   const PrayerTimesCard({
     super.key,
@@ -20,6 +22,9 @@ class PrayerTimesCard extends StatelessWidget {
     required this.timeLeftToEnd,
     required this.prayerProgress,
     required this.tomorrowFajr,
+    // !! isProhibitedTime যোগ করা হয়েছে
+    required this.isProhibitedTime, required DateTime ishrakTime,
+    // !! তাহাজ্জুদ, ইশরাক, যাওয়াল সরিয়ে ফেলা হয়েছে
   });
 
   @override
@@ -32,7 +37,6 @@ class PrayerTimesCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            // replaced withAlpha to avoid deprecation of withOpacity
             color: Colors.grey.withAlpha(26),
             spreadRadius: 2,
             blurRadius: 5,
@@ -42,12 +46,12 @@ class PrayerTimesCard extends StatelessWidget {
       child: Column(
         children: [
           Row(
-            // Aligning to the top makes the layout look cleaner
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // The Expanded widgets are now here to control the main layout
+              // প্রগ্রেস বারটি এখন 'isProhibitedTime' প্যারামিটার গ্রহণ করবে
               _buildProgressIndicator(),
               const SizedBox(width: 16),
+              // সালাতের তালিকায় শুধু ৫ ওয়াক্ত সালাত থাকবে
               _buildPrayerList(),
             ],
           ),
@@ -72,25 +76,29 @@ class PrayerTimesCard extends StatelessWidget {
     );
   }
 
-  // This widget now builds the progress bar
+  // !! এই উইজেটটি আপডেট করা হয়েছে
   Widget _buildProgressIndicator() {
-    // CORRECTED: The flex ratio is adjusted to give this section less space
+    // নিষিদ্ধ সময় হলে রঙ এবং লেখা পরিবর্তন করুন
+    final Color progressColor = isProhibitedTime ? Colors.red.shade700 : const Color(0xFF1D9375);
+    final String title = isProhibitedTime ? 'নিষিদ্ধ সময়' : currentPrayerName;
+    final String subtitle = isProhibitedTime ? 'সালাত থেকে বিরত থাকুন' : 'শেষ হতে বাকি';
+
     return Expanded(
       flex: 3,
       child: Column(
         children: [
           Text(
-            currentPrayerName,
-            style: const TextStyle(
+            title, // ডাইনামিক টাইটেল
+            style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF1D9375)),
+                color: progressColor), // ডাইনামিক রঙ
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 4),
-          const Text(
-            'শেষ হতে বাকি',
-            style: TextStyle(color: Colors.grey, fontSize: 12),
+          Text(
+            subtitle, // ডাইনামিক সাবটাইটেল
+            style: const TextStyle(color: Colors.grey, fontSize: 12),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 12),
@@ -113,23 +121,24 @@ class PrayerTimesCard extends StatelessWidget {
                   alignment: Alignment.center,
                   transform: Matrix4.rotationY(math.pi),
                   child: CircularProgressIndicator(
-                    // Safely clamp the progress to [0,1] and handle non-finite values
                     value: (prayerProgress.isFinite
                         ? prayerProgress.clamp(0.0, 1.0)
                         : 0.0),
                     strokeWidth: 6,
-                    color: const Color(0xFF1D9375),
+                    color: progressColor, // ডাইনামিক রঙ
                   ),
                 ),
               ),
-              Text(
-                timeLeftToEnd,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black54,
+              // নিষিদ্ধ সময়ে কাউন্টডাউন দেখানোর দরকার নেই
+              if (!isProhibitedTime)
+                Text(
+                  timeLeftToEnd,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black54,
+                  ),
                 ),
-              ),
             ],
           ),
         ],
@@ -137,67 +146,61 @@ class PrayerTimesCard extends StatelessWidget {
     );
   }
 
-  // This widget now calculates and displays the end times
+  // !! এই উইজেটটি আপডেট করা হয়েছে
   Widget _buildPrayerList() {
     DateTime getEndTime(Prayer prayer) {
-      // Map each prayer to its next prayer; isha ends at tomorrow's fajr (provided)
       switch (prayer) {
         case Prayer.fajr:
-          final DateTime? next = prayerTimes.timeForPrayer(Prayer.dhuhr);
-          return next ?? DateTime.now();
+          // ফজর শেষ হয় সূর্যোদয়ে, সূর্যোদয়ের ১৫ মিনিট আগে নয়
+          return prayerTimes.sunrise; 
         case Prayer.dhuhr:
-          final DateTime? next = prayerTimes.timeForPrayer(Prayer.asr);
-          return next ?? DateTime.now();
+          return prayerTimes.timeForPrayer(Prayer.asr) ?? DateTime.now();
         case Prayer.asr:
-          final DateTime? next = prayerTimes.timeForPrayer(Prayer.maghrib);
-          return next ?? DateTime.now();
+          return prayerTimes.timeForPrayer(Prayer.maghrib) ?? DateTime.now();
         case Prayer.maghrib:
-          final DateTime? next = prayerTimes.timeForPrayer(Prayer.isha);
-          return next ?? DateTime.now();
+          return prayerTimes.timeForPrayer(Prayer.isha) ?? DateTime.now();
         case Prayer.isha:
-          // Isha ends at tomorrow's fajr
           return tomorrowFajr;
-        // handle other possible enum values
         case Prayer.sunrise:
         case Prayer.none:
         default:
           return DateTime.now();
       }
     }
-    // collect start times
+    
+    // শুধু ৫ ওয়াক্তের সময়
     final fajrStart = prayerTimes.timeForPrayer(Prayer.fajr);
     final dhuhrStart = prayerTimes.timeForPrayer(Prayer.dhuhr);
     final asrStart = prayerTimes.timeForPrayer(Prayer.asr);
     final maghribStart = prayerTimes.timeForPrayer(Prayer.maghrib);
     final ishaStart = prayerTimes.timeForPrayer(Prayer.isha);
 
-    // CORRECTED: The flex ratio is adjusted to give this section MORE space
     return Expanded(
       flex: 5,
       child: Column(
         children: [
-          _prayerRow('ফজর:', fajrStart, getEndTime(Prayer.fajr),
+          // !! তাহাজ্জুদ এবং ইশরাক সরিয়ে ফেলা হয়েছে
+          _prayerRow('ফজর:', fajrStart!, getEndTime(Prayer.fajr),
               isActive: currentPrayer == Prayer.fajr),
-          _prayerRow('জোহর:', dhuhrStart, getEndTime(Prayer.dhuhr),
+          _prayerRow('যোহর:', dhuhrStart!, getEndTime(Prayer.dhuhr),
               isActive: currentPrayer == Prayer.dhuhr),
-          _prayerRow('আছর:', asrStart, getEndTime(Prayer.asr),
+          _prayerRow('আছর:', asrStart!, getEndTime(Prayer.asr),
               isActive: currentPrayer == Prayer.asr),
-          _prayerRow('মাগরিব:', maghribStart, getEndTime(Prayer.maghrib),
+          _prayerRow('মাগরিব:', maghribStart!, getEndTime(Prayer.maghrib),
               isActive: currentPrayer == Prayer.maghrib),
-          _prayerRow('ইশা:', ishaStart, getEndTime(Prayer.isha),
+          _prayerRow('ইশা:', ishaStart!, getEndTime(Prayer.isha),
               isActive: currentPrayer == Prayer.isha),
         ],
       ),
     );
   }
 
-  // This widget now shows a time range (start - end)
-  Widget _prayerRow(String name, DateTime? startTime, DateTime? endTime,
+  Widget _prayerRow(String name, DateTime startTime, DateTime endTime,
       {bool isActive = false}) {
-    final format = DateFormat.jm();
-    final String startStr =
-        startTime != null ? format.format(startTime) : '--:--';
-    final String endStr = endTime != null ? format.format(endTime) : '--:--';
+    // বাংলা লোকাল ব্যবহার করা হয়েছে
+    final format = DateFormat.jm('bn_BD');
+    final String startStr = format.format(startTime);
+    final String endStr = format.format(endTime);
     final timeRange = '$startStr - $endStr';
 
     return Container(
@@ -205,7 +208,7 @@ class PrayerTimesCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 4.0),
       decoration: BoxDecoration(
         color: isActive
-            ? const Color(0x1A1D9375) // 10% alpha of 0xFF1D9375
+            ? const Color(0x1A1D9375) // 10% alpha
             : Colors.transparent,
         borderRadius: BorderRadius.circular(8),
       ),
@@ -237,3 +240,4 @@ class PrayerTimesCard extends StatelessWidget {
     );
   }
 }
+
