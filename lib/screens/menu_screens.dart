@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'qibla_compass.dart';
 import 'prayer_settings_page.dart';
+import 'tasbeeh.dart';
 
 class MenuScreen extends StatelessWidget {
   const MenuScreen({super.key});
@@ -48,9 +50,27 @@ class MenuScreen extends StatelessWidget {
           _buildMenuItem(
               icon: Icons.explore_outlined,
               title: 'কিবলা কম্পাস',
-              onTap: () {}),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const QiblaCompassScreen(),
+                  ),
+                );
+              }),
           _buildMenuItem(
-              icon: Icons.format_list_numbered, title: 'তসবীহ', onTap: () {}),
+            icon: Icons.format_list_numbered,
+            title: 'তসবীহ',
+            onTap: () {
+              // Navigate to TasbeehCounterPage
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const TasbeehCounterScreen(),
+                ),
+              );
+            },
+          ),
           _buildMenuItem(
               icon: Icons.mosque_outlined,
               title: 'নিকটবর্তী মসজিদ',
@@ -85,7 +105,8 @@ class MenuScreen extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
       child: Text(
         title,
-        style: GoogleFonts.notoSansBengali( // <-- ফন্ট আপডেট করা হয়েছে
+        style: GoogleFonts.notoSansBengali(
+          // <-- ফন্ট আপডেট করা হয়েছে
           color: Color(0xFF1D9375),
           fontWeight: FontWeight.bold,
           fontSize: 14,
@@ -105,7 +126,8 @@ class MenuScreen extends StatelessWidget {
         leading: Icon(icon, color: Colors.grey.shade600),
         title: Text(
           title,
-          style: GoogleFonts.notoSansBengali( // <-- ফন্ট আপডেট করা হয়েছে
+          style: GoogleFonts.notoSansBengali(
+            // <-- ফন্ট আপডেট করা হয়েছে
             color: Colors.black,
             fontSize: 16,
           ),
@@ -116,4 +138,3 @@ class MenuScreen extends StatelessWidget {
     );
   }
 }
-
