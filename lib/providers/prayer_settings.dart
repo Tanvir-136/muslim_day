@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:adhan/adhan.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../data/bangladesh_districts.dart'; // <-- ১. নতুন ডেটা ফাইল ইম্পোর্ট করুন
+import '../data/bangladesh_districts.dart';
 
 class PrayerSettings extends ChangeNotifier {
   late SharedPreferences _prefs;
@@ -11,6 +11,11 @@ class PrayerSettings extends ChangeNotifier {
   String _locationName = bangladeshDistricts[0].name; // "ঢাকা"
   CalculationMethod _calculationMethod = CalculationMethod.karachi;
   Madhab _madhab = Madhab.hanafi;
+
+  // --- !! নতুন লোডিং স্টেট !! ---
+  bool _isLoading = true; // Start as true
+  bool get isLoading => _isLoading;
+  // --- !! শেষ !! ---
 
   // --- পাবলিক গেটার ---
   Coordinates get coordinates => _coordinates;
@@ -30,40 +35,59 @@ class PrayerSettings extends ChangeNotifier {
   }
 
   Future<void> updateCalculationMethod(CalculationMethod method) async {
+    _isLoading = true;
+    notifyListeners(); // Show loader
+    
     _calculationMethod = method;
     await _prefs.setString('calculationMethod', method.name);
-    notifyListeners();
+    
+    _isLoading = false;
+    notifyListeners(); // Hide loader and update UI
   }
 
   Future<void> updateMadhab(Madhab madhab) async {
+    _isLoading = true;
+    notifyListeners(); // Show loader
+
     _madhab = madhab;
     await _prefs.setString('madhab', madhab.name);
-    notifyListeners();
+
+    _isLoading = false;
+    notifyListeners(); // Hide loader and update UI
   }
 
-  // !! নতুন মেথড: জেলা অনুযায়ী লোকেশন আপডেট করার জন্য
+  // !! নতুন মেথড: জেলা অনুযায়ী লোকেশন আপডেট করার জন্য
   Future<void> updateLocation(String newLocationName) async {
+    _isLoading = true;
+    notifyListeners(); // Show loader
+
     try {
+      // Find the location data from the static list.
       final newLocationData = bangladeshDistricts.firstWhere(
-        (d) => d.name == newLocationName,
-        orElse: () => bangladeshDistricts[0] // না পেলে ডিফল্ট (Dhaka)
+        (district) => district.name == newLocationName,
+        // If not found, default to the first item in the list (Dhaka).
+        orElse: () => bangladeshDistricts[0],
       );
 
+      // Update the state with the new location's data.
       _locationName = newLocationData.name;
       _coordinates = newLocationData.coordinates;
 
+      // Persist the new location name for the next app launch.
       await _prefs.setString('locationName', _locationName);
-      
-      notifyListeners(); // home_content.dart কে আপডেট করার জন্য
     } catch (e) {
-      print("Error updating location: $e");
+      // Log any potential errors during the process.
+      debugPrint("Error updating location: $e");
+    } finally {
+      // Ensure loader is hidden even if there's an error
+      _isLoading = false;
+      notifyListeners(); // Hide loader and update UI
     }
   }
 
-  // !! জিপিএস ফাংশন (detectCurrentLocation) সম্পূর্ণ সরিয়ে ফেলা হয়েছে
-
   // --- সেভ ও লোড ---
   Future<void> _loadSettings() async {
+    // We are already in a loading state (_isLoading = true by default)
     _prefs = await SharedPreferences.getInstance();
     
     _locationName = _prefs.getString('locationName') ?? bangladeshDistricts[0].name;
@@ -84,6 +108,8 @@ class PrayerSettings extends ChangeNotifier {
       orElse: () => Madhab.hanafi
     );
 
-    notifyListeners();
+    // --- !! লোডিং শেষ !! ---
+    _isLoading = false;
+    notifyListeners(); // Notify UI that loading is complete
   }
 }

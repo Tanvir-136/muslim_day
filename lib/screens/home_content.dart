@@ -1,10 +1,12 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:adhan/adhan.dart';
 import 'package:hijri/hijri_calendar.dart';
-import 'dart:async';
 import 'package:provider/provider.dart'; 
 import '../providers/prayer_settings.dart'; 
+import 'location_list_page.dart';
+import '../data/bangladesh_districts.dart';
 
 // Import your custom widgets
 import '../widgets/location_bar.dart';
@@ -113,7 +115,6 @@ class _HomeContentState extends State<HomeContent> {
     // !! আপডেট: প্রথমে নিষিদ্ধ সময় চেক করুন
     _isProhibitedTime = _checkIfProhibited(now);
 
-    // !! প্রথম ত্রুটি সমাধান: (time: now) কে (now) করা হয়েছে
     _currentPrayer = _prayerTimes!.currentPrayer();
 
     DateTime startTime;
@@ -208,7 +209,10 @@ class _HomeContentState extends State<HomeContent> {
   }
   
   void _handleLocationPress() {
-    Provider.of<PrayerSettings>(context, listen: false).detectCurrentLocation();
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const LocationListPage()),
+    );
   }
 
   @override
@@ -218,9 +222,7 @@ class _HomeContentState extends State<HomeContent> {
         if (settings.isLoading || _prayerTimes == null || _tomorrowFajr == null) {
           return const Center(child: CircularProgressIndicator(color: Colors.teal));
         }
-
         // --- সময় গণনা (নফল ও নিষিদ্ধ সময়ের জন্য) ---
-        
         final ishrakStartTime = _prayerTimes!.sunrise.add(const Duration(minutes: 15));
         final maghribTime = _prayerTimes!.maghrib;
         final fajrTimeTomorrow = _tomorrowFajr!;
@@ -259,7 +261,8 @@ class _HomeContentState extends State<HomeContent> {
                   timeLeftToEnd: _formatDuration(_timeLeftToEnd),
                   prayerProgress: _prayerProgress,
                   tomorrowFajr: _tomorrowFajr!,
-                  isProhibitedTime: _isProhibitedTime, // !! নতুন প্যারামিটার পাস করা হয়েছে
+                  isProhibitedTime: _isProhibitedTime,
+                  ishrakTime: sunriseEnd,
                 ),
                 
                 // !! InfoCardsGrid এখন নফল সালাতের সময় দেখাবে
