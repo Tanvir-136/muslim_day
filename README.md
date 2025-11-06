@@ -41,7 +41,6 @@ Built with Flutter, this app is designed to be fast, beautiful, and available on
 * **Framework:** [Flutter](https://flutter.dev/)
 * **Language:** [Dart](https://dart.dev/)
 * **State Management:** (e.g., Provider, BLoC, GetX - *Update this*)
-* **Database:** (e.g., SQLite, Firebase - *Update this*)
 
 ---
 
@@ -58,7 +57,7 @@ To get a local copy up and running, follow these simple steps.
 1.  **Fork** the repository.
 2.  **Clone** your forked repo:
     ```sh
-    git clone [https://github.com/YOUR_USERNAME/muslim_day.git](https://github.com/YOUR_USERNAME/muslim_day.git)
+    git clone [https://github.com/tanvir-136/muslim_day.git](https://github.com/tanvir-136/muslim_day.git)
     ```
 3.  **Navigate** to the project directory:
     ```sh
