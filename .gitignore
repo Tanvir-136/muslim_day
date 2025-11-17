@@ -4,6 +4,9 @@
 *.apk
 *.ap_
 
+#API KEY FILE
+lib/screens/fiqh_assistant_page.dart
+
 # Files for the ART/Dalvik VM
 *.dex
 

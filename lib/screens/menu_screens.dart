@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'qibla_compass.dart';
 import 'prayer_settings_page.dart';
 import 'tasbeeh.dart';
+import 'fiqh_assistant_page.dart';
 
 class MenuScreen extends StatelessWidget {
   const MenuScreen({super.key});
@@ -40,10 +41,19 @@ class MenuScreen extends StatelessWidget {
               );
             },
           ),
+          // !! ২. FAQ / মাসআলা বাটনটি আপডেট করা হয়েছে
           _buildMenuItem(
-              icon: Icons.quiz_outlined,
-              title: 'বহুল জিজ্ঞাসিত প্রশ্ন (FAQ)',
-              onTap: () {}),
+              icon: Icons.support_agent_outlined, // <-- নতুন আইকন
+              title: 'ফিকহ অ্যাসিস্ট্যান্ট', // <-- নতুন টাইটেল
+              onTap: () {
+                // <-- ৩. নতুন পৃষ্ঠায় নেভিগেশন
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const FiqhAssistantPage(),
+                  ),
+                );
+              }),
 
           // Tools Section
           _buildSectionHeader('টুলস'),
