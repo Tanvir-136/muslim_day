@@ -60,7 +60,7 @@ class MenuScreen extends StatelessWidget {
               }),
           _buildMenuItem(
             icon: Icons.format_list_numbered,
-            title: 'তসবীহ',
+            title: 'তাসবীহ',
             onTap: () {
               // Navigate to TasbeehCounterPage
               Navigator.push(

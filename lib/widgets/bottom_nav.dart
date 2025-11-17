@@ -33,7 +33,7 @@ class BottomNav extends StatelessWidget {
         BottomNavigationBarItem(
           icon: Icon(Icons.volunteer_activism_outlined),
           activeIcon: Icon(Icons.volunteer_activism),
-          label: 'দুআ',
+          label: 'আমল ট্রাকার',
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.menu),

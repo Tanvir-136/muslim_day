@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart'; 
 import '../providers/quran_settings.dart'; 
 import '../widgets/bottom_nav.dart';
 import 'home_content.dart';
 import 'quran_screen.dart'; 
 import 'menu_screens.dart';
+import '../providers/amal_provider.dart';
+import 'amal_journal_page.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -16,18 +18,23 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
 
-  // 3. This list is no longer 'const' because the provider is created at runtime.
+  // This list is no longer 'const'
   static final List<Widget> _pages = <Widget>[
-    const HomeContent(), // Index 0: home screen UI
-    const Center(child: Text('Mahfil Page')), // Index 1: Mahfil
-
-    // 4. THIS IS THE FIX:
+    const HomeContent(), // Index 0: Home
+    const Center(child: Text('মাহফিল পেজ')), // Index 1: Mahfil
+    
+    // Index 2: Quran (as before)
     ChangeNotifierProvider(
       create: (context) => QuranSettings(),
-      child: const QuranScreen(), // Index 2: Quran
+      child: const QuranScreen(), 
     ),
     
-    const Center(child: Text('Dua Page')), // Index 3: Dua
+    // !! 3. Replaced "Dua Page" with "Amal Journal"
+    ChangeNotifierProvider(
+      create: (context) => AmalProvider(),
+      child: const AmalJournalPage(), // Index 3: Amal Journal
+    ), 
+    
     const MenuScreen(), // Index 4: Menu
   ];
 
@@ -40,11 +47,11 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // IndexedStack keeps the state of pages (like scroll position) when you switch tabs.
       body: IndexedStack(
         index: _selectedIndex,
         children: _pages,
       ),
+      // !! 4. Enabled your BottomNav
       bottomNavigationBar: BottomNav(
         selectedIndex: _selectedIndex,
         onItemTapped: _onItemTapped,
