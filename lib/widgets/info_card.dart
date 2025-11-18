@@ -84,7 +84,7 @@ class InfoCard extends StatelessWidget {
     );
   }
 
-  // Helper method to build the special Sehri/Iftar card
+
   Widget _buildSehriIftarCard() {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),

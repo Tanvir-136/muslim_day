@@ -1,16 +1,16 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- !! FIX: Add your permissions here -->
+    <!-- !! ফিক্স: জিপিএস-এর জন্য এই পারমিশনগুলো যোগ করা হয়েছে -->
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
-    <!-- Compass permissions (these are also good to have) -->
+    <!-- কিবলা কম্পাসের জন্য সেন্সর (ঐচ্ছিক, কিন্তু ভালো) -->
     <uses-feature android:name="android.hardware.sensor.accelerometer" android:required="false" />
     <uses-feature android:name="android.hardware.sensor.compass" android:required="false" />
     <uses-feature android:name="android.hardware.location.gps" android:required="false" />
 
-    <!-- This is your application block, leave it as is -->
+    <!-- আপনার অ্যাপ্লিকেশন কোড -->
     <application
         android:label="muslim_day"
         android:name="${applicationName}"

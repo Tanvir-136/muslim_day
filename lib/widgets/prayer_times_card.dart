@@ -11,7 +11,7 @@ class PrayerTimesCard extends StatelessWidget {
   final double prayerProgress;
   final DateTime tomorrowFajr;
   
-  // !! নতুন প্যারামিটার: নিষিদ্ধ সময় কিনা তা জানার জন্য
+  // !! নতুন প্যারামিটার: নিষিদ্ধ সময় কিনা তা জানার জন্য
   final bool isProhibitedTime;
 
   const PrayerTimesCard({
@@ -22,9 +22,9 @@ class PrayerTimesCard extends StatelessWidget {
     required this.timeLeftToEnd,
     required this.prayerProgress,
     required this.tomorrowFajr,
-    // !! isProhibitedTime যোগ করা হয়েছে
-    required this.isProhibitedTime, required DateTime ishrakTime,
-    // !! তাহাজ্জুদ, ইশরাক, যাওয়াল সরিয়ে ফেলা হয়েছে
+    // !! isProhibitedTime যোগ করা হয়েছে
+    required this.isProhibitedTime,
+    // !! ত্রুটি সমাধান: অপ্রয়োজনীয় 'ishrakTime' প্যারামিটারটি সরিয়ে ফেলা হয়েছে
   });
 
   @override
@@ -51,7 +51,7 @@ class PrayerTimesCard extends StatelessWidget {
               // প্রগ্রেস বারটি এখন 'isProhibitedTime' প্যারামিটার গ্রহণ করবে
               _buildProgressIndicator(),
               const SizedBox(width: 16),
-              // সালাতের তালিকায় শুধু ৫ ওয়াক্ত সালাত থাকবে
+              // সালাতের তালিকায় শুধু ৫ ওয়াক্ত সালাত থাকবে
               _buildPrayerList(),
             ],
           ),
@@ -76,9 +76,9 @@ class PrayerTimesCard extends StatelessWidget {
     );
   }
 
-  // !! এই উইজেটটি আপডেট করা হয়েছে
+  // !! এই উইজেটটি আপডেট করা হয়েছে
   Widget _buildProgressIndicator() {
-    // নিষিদ্ধ সময় হলে রঙ এবং লেখা পরিবর্তন করুন
+    // নিষিদ্ধ সময় হলে রঙ এবং লেখা পরিবর্তন করুন
     final Color progressColor = isProhibitedTime ? Colors.red.shade700 : const Color(0xFF1D9375);
     final String title = isProhibitedTime ? 'নিষিদ্ধ সময়' : currentPrayerName;
     final String subtitle = isProhibitedTime ? 'সালাত থেকে বিরত থাকুন' : 'শেষ হতে বাকি';
@@ -129,7 +129,7 @@ class PrayerTimesCard extends StatelessWidget {
                   ),
                 ),
               ),
-              // নিষিদ্ধ সময়ে কাউন্টডাউন দেখানোর দরকার নেই
+              // নিষিদ্ধ সময়ে কাউন্টডাউন দেখানোর দরকার নেই
               if (!isProhibitedTime)
                 Text(
                   timeLeftToEnd,
@@ -146,12 +146,12 @@ class PrayerTimesCard extends StatelessWidget {
     );
   }
 
-  // !! এই উইজেটটি আপডেট করা হয়েছে
+  // !! এই উইজেটটি আপডেট করা হয়েছে
   Widget _buildPrayerList() {
     DateTime getEndTime(Prayer prayer) {
       switch (prayer) {
         case Prayer.fajr:
-          // ফজর শেষ হয় সূর্যোদয়ে, সূর্যোদয়ের ১৫ মিনিট আগে নয়
+          // ফজর শেষ হয় সূর্যোদয়ে
           return prayerTimes.sunrise; 
         case Prayer.dhuhr:
           return prayerTimes.timeForPrayer(Prayer.asr) ?? DateTime.now();
@@ -168,7 +168,7 @@ class PrayerTimesCard extends StatelessWidget {
       }
     }
     
-    // শুধু ৫ ওয়াক্তের সময়
+    // শুধু ৫ ওয়াক্তের সময়
     final fajrStart = prayerTimes.timeForPrayer(Prayer.fajr);
     final dhuhrStart = prayerTimes.timeForPrayer(Prayer.dhuhr);
     final asrStart = prayerTimes.timeForPrayer(Prayer.asr);
@@ -179,29 +179,43 @@ class PrayerTimesCard extends StatelessWidget {
       flex: 5,
       child: Column(
         children: [
-          // !! তাহাজ্জুদ এবং ইশরাক সরিয়ে ফেলা হয়েছে
-          _prayerRow('ফজর:', fajrStart!, getEndTime(Prayer.fajr),
+          // !! ত্রুটি সমাধান: `!` (bang operator) সরিয়ে ফেলা হয়েছে
+          _prayerRow('ফজর:', fajrStart, getEndTime(Prayer.fajr),
               isActive: currentPrayer == Prayer.fajr),
-          _prayerRow('যোহর:', dhuhrStart!, getEndTime(Prayer.dhuhr),
+          _prayerRow('যোহর:', dhuhrStart, getEndTime(Prayer.dhuhr),
               isActive: currentPrayer == Prayer.dhuhr),
-          _prayerRow('আছর:', asrStart!, getEndTime(Prayer.asr),
+          _prayerRow('আছর:', asrStart, getEndTime(Prayer.asr),
               isActive: currentPrayer == Prayer.asr),
-          _prayerRow('মাগরিব:', maghribStart!, getEndTime(Prayer.maghrib),
+          _prayerRow('মাগরিব:', maghribStart, getEndTime(Prayer.maghrib),
               isActive: currentPrayer == Prayer.maghrib),
-          _prayerRow('ইশা:', ishaStart!, getEndTime(Prayer.isha),
+          _prayerRow('ইশা:', ishaStart, getEndTime(Prayer.isha),
               isActive: currentPrayer == Prayer.isha),
         ],
       ),
     );
   }
 
-  Widget _prayerRow(String name, DateTime startTime, DateTime endTime,
+  // !! এই উইজেটটি আপডেট করা হয়েছে
+  Widget _prayerRow(String name, DateTime? startTime, DateTime? endTime,
       {bool isActive = false}) {
-    // বাংলা লোকাল ব্যবহার করা হয়েছে
+    
+    // বাংলা লোকাল ব্যবহার করা হয়েছে
     final format = DateFormat.jm('bn_BD');
-    final String startStr = format.format(startTime);
-    final String endStr = format.format(endTime);
-    final timeRange = '$startStr - $endStr';
+    
+    // !! ত্রুটি সমাধান: startTime এবং endTime null হতে পারে, তাই চেক করা হয়েছে
+    final String startStr =
+        startTime != null ? format.format(startTime) : '--:--';
+    final String endStr = endTime != null ? format.format(endTime) : '--:--';
+
+    // !! ত্রুটি সমাধান: _formatTime হেল্পার ফাংশনটি এখানে নেই, তাই সরাসরি format() ব্যবহার করা হয়েছে
+    String timeRange;
+    if (name == 'ফজর:' && endTime != null) {
+      timeRange = '$startStr - ${format.format(endTime)}'; // সূর্যোদয়
+    } else if (name == 'ইশা:' && endTime != null) {
+      timeRange = '$startStr - ${format.format(endTime)}'; // পরবর্তী ফজর
+    } else {
+      timeRange = '$startStr - $endStr';
+    }
 
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 10.0),
@@ -240,4 +254,3 @@ class PrayerTimesCard extends StatelessWidget {
     );
   }
 }
-
