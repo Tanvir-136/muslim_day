@@ -2,57 +2,121 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'providers/quran_settings.dart';
-import 'providers/prayer_settings.dart'; 
+import 'providers/prayer_settings.dart';
+import 'providers/theme_provider.dart';
 import 'screens/home_screen.dart'; 
-
-// !! 1. Import the date formatting library
 import 'package:intl/date_symbol_data_local.dart';
 
 void main() async { 
-  // !! 3. Ensure Flutter is initialized before running async code
   WidgetsFlutterBinding.ensureInitialized();
-
-  // !! 4. THIS IS THE FIX: Load Bengali (bn_BD) locale datadata
   await initializeDateFormatting('bn_BD', null);
-
-  // Wrap your app in MultiProvider
   runApp(
     MultiProvider(
       providers: [
+        ChangeNotifierProvider(create: (context) => ThemeProvider()),
         ChangeNotifierProvider(create: (context) => QuranSettings()),
         ChangeNotifierProvider(create: (context) => PrayerSettings()),
       ],
-      child: const MuslimDayApp(), // Your app
+      child: const MuslimDayApp(),
     ),
   );
 }
-
 class MuslimDayApp extends StatelessWidget {
   const MuslimDayApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<QuranSettings>(
-      builder: (context, settings, child) {
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        if (themeProvider.isLoading) {
+          return const MaterialApp(
+            debugShowCheckedModeBanner: false,
+            home: Scaffold(
+              body: Center(
+                child: CircularProgressIndicator(color: Color(0xFF1D9375)),
+              ),
+            ),
+          );
+        }
+
         return MaterialApp(
           title: 'Muslim Day',
+          debugShowCheckedModeBanner: false,
+          themeMode: themeProvider.themeMode,
+          
+          // Light Theme
           theme: ThemeData(
+            brightness: Brightness.light,
             primarySwatch: Colors.teal,
-            // Set the default app font to Bengali
-            fontFamily: GoogleFonts.notoSansBengali().fontFamily, 
+            primaryColor: const Color(0xFF1A4D4D),
+            scaffoldBackgroundColor: const Color(0xFFF5F5F5),
+            fontFamily: GoogleFonts.notoSansBengali().fontFamily,
+            
             appBarTheme: AppBarTheme(
               backgroundColor: const Color(0xFF1A4D4D),
               elevation: 4,
-              titleTextStyle: GoogleFonts.playfairDisplay(
-                fontSize: 22,
+              foregroundColor: Colors.white,
+              titleTextStyle: GoogleFonts.notoSansBengali(
+                fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
-                letterSpacing: 1.2,
               ),
             ),
-            scaffoldBackgroundColor: const Color(0xFFF5F5F5),
+            
+            cardTheme: const CardThemeData(
+              elevation: 2,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(12)),
+              ),
+              color: Colors.white,
+            ),
+            
+            colorScheme: const ColorScheme.light(
+              primary: Color(0xFF1A4D4D),
+              secondary: Color(0xFF1D9375),
+              surface: Colors.white,
+              background: Color(0xFFF5F5F5),
+              error: Colors.red,
+            ),
           ),
-          home: const HomeScreen(), 
+          
+          // Dark Theme
+          darkTheme: ThemeData(
+            brightness: Brightness.dark,
+            primarySwatch: Colors.teal,
+            primaryColor: const Color(0xFF1D9375),
+            scaffoldBackgroundColor: const Color(0xFF121212),
+            fontFamily: GoogleFonts.notoSansBengali().fontFamily,
+            
+            appBarTheme: AppBarTheme(
+              backgroundColor: const Color(0xFF1F1F1F),
+              elevation: 4,
+              foregroundColor: Colors.white,
+              titleTextStyle: GoogleFonts.notoSansBengali(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+            
+            cardTheme: const CardThemeData(
+              elevation: 4,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(12)),
+              ),
+              color: Color(0xFF1F1F1F),
+            ),
+            
+            colorScheme: const ColorScheme.dark(
+              primary: Color(0xFF1D9375),
+              secondary: Color(0xFF4DB6AC),
+              surface: Color(0xFF1F1F1F),
+              background: Color(0xFF121212),
+              error: Colors.redAccent,
+            ),
+          ),
+          
+          home: const HomeScreen(),
         );
       },
     );

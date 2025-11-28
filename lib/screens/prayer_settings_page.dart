@@ -66,10 +66,6 @@ class PrayerSettingsPage extends StatelessWidget {
                   }
                 },
               ),
-              
-              // You can add more settings here like:
-              // - High Latitude Adjustments
-              // - Time Formats (12/24)
             ],
           ),
         );
@@ -141,6 +137,10 @@ class PrayerSettingsPage extends StatelessWidget {
         return "Singapore";
       case CalculationMethod.north_america:
         return "ISNA (North America)";
+      case CalculationMethod.moon_sighting_committee:
+        return "Moonsighting Committee";
+      case CalculationMethod.tehran:
+        return "Tehran";
       case CalculationMethod.other:
         return "Other";
       default:

@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 class LocationBar extends StatelessWidget {
   final String location;
   final String country;
-  final VoidCallback onLocationPressed; // <-- 1. Add callback
-  final bool isLoading; // <-- 2. Add loading state
+  final VoidCallback onLocationPressed; 
+  final bool isLoading;
 
   const LocationBar({
     super.key,
@@ -51,17 +51,17 @@ class LocationBar extends StatelessWidget {
           // 4. Add GPS button
           IconButton(
             icon: isLoading 
-                ? SizedBox( // Show loading indicator
+                ? const SizedBox( // Show loading indicator
                     width: 20, 
                     height: 20, 
                     child: CircularProgressIndicator(strokeWidth: 2, color: Colors.teal)
                   )
-                : const Icon( // Show location icon
+                : const Icon(
                     Icons.my_location, 
                     color: Colors.grey, 
                     size: 24
                   ),
-            onPressed: isLoading ? null : onLocationPressed, // Disable button when loading
+            onPressed: isLoading ? null : onLocationPressed,
             tooltip: "Detect Current Location",
           ),
         ],

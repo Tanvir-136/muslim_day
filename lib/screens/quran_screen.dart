@@ -3,10 +3,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:quran/quran.dart' as quran;
 
-// !! New import: We are importing our Bengali data file
 import '../data/bengali_surah_data.dart';
 import '../providers/quran_settings.dart';
-import 'quran_settings.dart'; // For the settings icon
+import 'quran_settings.dart';
 import 'surah_details_screen.dart';
 
 /// Custom helper function that converts English numbers to Bengali numbers.
@@ -64,9 +63,9 @@ class QuranScreen extends StatelessWidget {
           ),
           iconTheme: IconThemeData(color: Colors.grey[800]),
           actions: [
-            // ফিল্টার/সেটিংস আইকন
+            
             IconButton(
-              icon: const Icon(Icons.settings), // ফিল্টার আইকন
+              icon: const Icon(Icons.settings),
               onPressed: () {
                 // আমরা এটাকে আপনার তৈরি করা SettingsPage এর সাথে লিঙ্ক করছি
                 Navigator.push(

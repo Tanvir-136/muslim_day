@@ -4,28 +4,217 @@ import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart' as geo;
 import 'package:shared_preferences/shared_preferences.dart';
 
+// Prayer time types including nafil and prohibited times
+enum PrayerTimeType {
+  fajr,
+  sunrise,
+  dhuhr,
+  asr,
+  maghrib,
+  isha,
+  tahajjud,
+  ishrak,
+  duha,
+  prohibitedAfterFajr,
+  prohibitedBeforeDhuhr,
+  prohibitedAfterAsr,
+}
+
+class ExtendedPrayerTime {
+  final String name;
+  final String nameBn;
+  final DateTime time;
+  final PrayerTimeType type;
+  final bool isProhibited;
+  final bool isNafil;
+
+  ExtendedPrayerTime({
+    required this.name,
+    required this.nameBn,
+    required this.time,
+    required this.type,
+    this.isProhibited = false,
+    this.isNafil = false,
+  });
+}
+
 class PrayerSettings extends ChangeNotifier {
   late SharedPreferences _prefs;
 
-  // --- ডিফল্ট মান ---
-  Coordinates _coordinates = Coordinates(23.8103, 90.4125); // ডিফল্ট: ঢাকা
+  Coordinates _coordinates = Coordinates(23.8103, 90.4125); 
   String _locationName = "ঢাকা, বাংলাদেশ";
   CalculationMethod _calculationMethod = CalculationMethod.karachi;
   Madhab _madhab = Madhab.hanafi;
-  bool _isLoading = true; // অ্যাপ চালু হলে প্রথমে লোড হবে
+  bool _isLoading = true; 
 
-  // --- পাবলিক গেটার ---
   Coordinates get coordinates => _coordinates;
   String get locationName => _locationName;
   CalculationMethod get calculationMethod => _calculationMethod;
   Madhab get madhab => _madhab;
   bool get isLoading => _isLoading;
 
-  // ক্যালকুলেশন প্যারামিটার গেটার
   CalculationParameters get calculationParams {
     final params = _calculationMethod.getParameters();
     params.madhab = _madhab;
     return params;
+  }
+
+  String getCalculationMethodName(CalculationMethod method) {
+    switch (method) {
+      case CalculationMethod.muslim_world_league:
+        return "Muslim World League";
+      case CalculationMethod.egyptian:
+        return "Egyptian General Authority";
+      case CalculationMethod.karachi:
+        return "University of Islamic Sciences, Karachi";
+      case CalculationMethod.umm_al_qura:
+        return "Umm al-Qura University, Makkah";
+      case CalculationMethod.dubai:
+        return "Dubai (UAE)";
+      case CalculationMethod.qatar:
+        return "Qatar";
+      case CalculationMethod.kuwait:
+        return "Kuwait";
+      case CalculationMethod.singapore:
+        return "Singapore";
+      case CalculationMethod.north_america:
+        return "ISNA (North America)";
+      case CalculationMethod.moon_sighting_committee:
+        return "Moonsighting Committee";
+      case CalculationMethod.tehran:
+        return "Tehran";
+      default:
+        return method.name;
+    }
+  }
+
+  // Get all extended prayer times including nafil and prohibited times
+  List<ExtendedPrayerTime> getExtendedPrayerTimes(DateTime date) {
+    final prayerTimes = PrayerTimes.today(_coordinates, calculationParams);
+    final List<ExtendedPrayerTime> times = [];
+
+    // Tahajjud (Last third of night)
+    final lastThirdOfNight = prayerTimes.isha.add(
+      Duration(
+        minutes: (prayerTimes.fajr.difference(prayerTimes.isha).inMinutes * 2 / 3).round(),
+      ),
+    );
+    times.add(ExtendedPrayerTime(
+      name: 'Tahajjud',
+      nameBn: 'তাহাজ্জুদ',
+      time: lastThirdOfNight,
+      type: PrayerTimeType.tahajjud,
+      isNafil: true,
+    ));
+
+    // Fajr
+    times.add(ExtendedPrayerTime(
+      name: 'Fajr',
+      nameBn: 'ফজর',
+      time: prayerTimes.fajr,
+      type: PrayerTimeType.fajr,
+    ));
+
+    // Prohibited time after Fajr (until 15-20 mins after sunrise)
+    times.add(ExtendedPrayerTime(
+      name: 'Prohibited (After Fajr)',
+      nameBn: 'নিষিদ্ধ সময় (ফজরের পর)',
+      time: prayerTimes.sunrise,
+      type: PrayerTimeType.prohibitedAfterFajr,
+      isProhibited: true,
+    ));
+
+    // Sunrise
+    times.add(ExtendedPrayerTime(
+      name: 'Sunrise',
+      nameBn: 'সূর্যোদয়',
+      time: prayerTimes.sunrise,
+      type: PrayerTimeType.sunrise,
+    ));
+
+    // Ishrak (15-20 mins after sunrise)
+    final ishrakTime = prayerTimes.sunrise.add(const Duration(minutes: 20));
+    times.add(ExtendedPrayerTime(
+      name: 'Ishrak',
+      nameBn: 'ইশরাক',
+      time: ishrakTime,
+      type: PrayerTimeType.ishrak,
+      isNafil: true,
+    ));
+
+    // Duha (Mid-morning)
+    final duhaTime = prayerTimes.sunrise.add(
+      Duration(
+        minutes: (prayerTimes.dhuhr.difference(prayerTimes.sunrise).inMinutes * 0.4).round(),
+      ),
+    );
+    times.add(ExtendedPrayerTime(
+      name: 'Duha',
+      nameBn: 'চাশত',
+      time: duhaTime,
+      type: PrayerTimeType.duha,
+      isNafil: true,
+    ));
+
+    // Prohibited before Dhuhr (10-15 mins before)
+    times.add(ExtendedPrayerTime(
+      name: 'Prohibited (Before Dhuhr)',
+      nameBn: 'নিষিদ্ধ সময় (জোহরের আগে)',
+      time: prayerTimes.dhuhr.subtract(const Duration(minutes: 10)),
+      type: PrayerTimeType.prohibitedBeforeDhuhr,
+      isProhibited: true,
+    ));
+
+    // Dhuhr
+    times.add(ExtendedPrayerTime(
+      name: 'Dhuhr',
+      nameBn: 'যোহর',
+      time: prayerTimes.dhuhr,
+      type: PrayerTimeType.dhuhr,
+    ));
+
+    // Asr
+    times.add(ExtendedPrayerTime(
+      name: 'Asr',
+      nameBn: 'আসর',
+      time: prayerTimes.asr,
+      type: PrayerTimeType.asr,
+    ));
+
+    // Prohibited after Asr (until Maghrib)
+    times.add(ExtendedPrayerTime(
+      name: 'Prohibited (After Asr)',
+      nameBn: 'নিষিদ্ধ সময় (আসরের পর)',
+      time: prayerTimes.asr,
+      type: PrayerTimeType.prohibitedAfterAsr,
+      isProhibited: true,
+    ));
+
+    // Maghrib
+    times.add(ExtendedPrayerTime(
+      name: 'Maghrib',
+      nameBn: 'মাগরিব',
+      time: prayerTimes.maghrib,
+      type: PrayerTimeType.maghrib,
+    ));
+
+    // Isha
+    times.add(ExtendedPrayerTime(
+      name: 'Isha',
+      nameBn: 'ইশা',
+      time: prayerTimes.isha,
+      type: PrayerTimeType.isha,
+    ));
+
+    return times;
+  }
+
+  // Get only the 5 fard prayers
+  List<ExtendedPrayerTime> getFivePrayers(DateTime date) {
+    final allTimes = getExtendedPrayerTimes(date);
+    return allTimes.where((time) => 
+      !time.isNafil && !time.isProhibited && time.type != PrayerTimeType.sunrise
+    ).toList();
   }
 
   PrayerSettings() {
@@ -37,7 +226,6 @@ class PrayerSettings extends ChangeNotifier {
     notifyListeners();
   }
 
-  // --- পাবলিক মেথড ---
 
   Future<void> updateCalculationMethod(CalculationMethod method) async {
     _calculationMethod = method;
@@ -51,7 +239,6 @@ class PrayerSettings extends ChangeNotifier {
     notifyListeners();
   }
 
-  // !! জিপিএস দিয়ে লোকেশন পাওয়ার ফাংশন
   Future<void> detectCurrentLocation() async {
     _setLoading(true);
     try {
@@ -81,11 +268,10 @@ class PrayerSettings extends ChangeNotifier {
 
       _coordinates = Coordinates(position.latitude, position.longitude);
 
-      // লোকেশনের নাম বের করা
       List<geo.Placemark> placemarks = await geo.placemarkFromCoordinates(
         position.latitude, 
         position.longitude,
-        // acceptLanguage: "bn_BD" // বাংলায় নাম পাওয়ার চেষ্টা
+        // acceptLanguage: "bn_BD" 
       );
       
       if (placemarks.isNotEmpty) {

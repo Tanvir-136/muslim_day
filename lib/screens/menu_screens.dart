@@ -1,9 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'qibla_compass.dart';
-import 'prayer_settings_page.dart';
 import 'tasbeeh.dart';
 import 'fiqh_assistant_page.dart';
+import 'dua_collection_page.dart';
+import 'nearby_mosque_page.dart';
+import 'masnoon_amal_page.dart';
+import 'app_settings_page.dart';
+import 'prayer_streak_page.dart';
+import 'learning_path_page.dart';
+import 'ai_assistant_page.dart';
+import 'app_caution_page.dart';
 
 class MenuScreen extends StatelessWidget {
   const MenuScreen({super.key});
@@ -27,26 +34,75 @@ class MenuScreen extends StatelessWidget {
       ),
       body: ListView(
         children: [
-          // General Section
+          // Unique Features Section
+          _buildSectionHeader('🌟 বিশেষ ফিচার'),
           _buildMenuItem(
-            icon: Icons.settings_outlined,
-            title: 'সেটিংস',
+            icon: Icons.local_fire_department,
+            title: 'নামাজ স্ট্রিক ও পুরস্কার',
             onTap: () {
-              // <-- ৩. নেভিগেশন যোগ করা হয়েছে
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const PrayerSettingsPage(),
+                  builder: (context) => const PrayerStreakPage(),
                 ),
               );
             },
           ),
-          // !! ২. FAQ / মাসআলা বাটনটি আপডেট করা হয়েছে
           _buildMenuItem(
-              icon: Icons.support_agent_outlined, // <-- নতুন আইকন
-              title: 'ফিকহ অ্যাসিস্ট্যান্ট', // <-- নতুন টাইটেল
+            icon: Icons.school_outlined,
+            title: 'ইসলামিক শিক্ষার পথ',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const LearningPathPage(),
+                ),
+              );
+            },
+          ),
+          _buildMenuItem(
+            icon: Icons.psychology,
+            title: 'AI সহায়ক',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const AIAssistantPage(),
+                ),
+              );
+            },
+          ),
+          
+          // General Section
+          _buildMenuItem(
+            icon: Icons.info_outline,
+            title: 'বিশেষ দ্রষ্টব্য (FAQ)',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const AppCautionPage(),
+                ),
+              );
+            },
+          ),
+          _buildMenuItem(
+            icon: Icons.settings_outlined,
+            title: 'সেটিংস',
+            onTap: () {
+              // <-- ৩. নেভিগেশন যোগ করা হয়েছে
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const AppSettingsPage(),
+                ),
+              );
+            },
+          ),
+          _buildMenuItem(
+              icon: Icons.support_agent_outlined,
+              title: 'ফিকহ অ্যাসিস্ট্যান্ট', 
               onTap: () {
-                // <-- ৩. নতুন পৃষ্ঠায় নেভিগেশন
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -82,9 +138,27 @@ class MenuScreen extends StatelessWidget {
             },
           ),
           _buildMenuItem(
+              icon: Icons.book,
+              title: 'দোয়া সমূহ',
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const DuaCollectionPage(),
+                  ),
+                );
+              }),
+          _buildMenuItem(
               icon: Icons.mosque_outlined,
               title: 'নিকটবর্তী মসজিদ',
-              onTap: () {}),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const NearbyMosquePage(),
+                  ),
+                );
+              }),
 
           // Knowledge Section
           _buildSectionHeader('প্রয়োজনীয় ইলম'),
@@ -94,12 +168,19 @@ class MenuScreen extends StatelessWidget {
               onTap: () {}),
           _buildMenuItem(
               icon: Icons.web_stories_outlined,
-              title: 'মুসলিমস ডে ওয়েবসাইট',
+              title: 'ফজর ফাইটার ওয়েবসাইট',
               onTap: () {}),
           _buildMenuItem(
               icon: Icons.assignment_outlined,
               title: 'মাসনুন আমল',
-              onTap: () {}),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const MasnoonAmalPage(),
+                  ),
+                );
+              }),
           _buildMenuItem(
               icon: Icons.article_outlined, title: 'আর্টিকেল', onTap: () {}),
           _buildMenuItem(
@@ -116,7 +197,6 @@ class MenuScreen extends StatelessWidget {
       child: Text(
         title,
         style: GoogleFonts.notoSansBengali(
-          // <-- ফন্ট আপডেট করা হয়েছে
           color: Color(0xFF1D9375),
           fontWeight: FontWeight.bold,
           fontSize: 14,
@@ -137,7 +217,6 @@ class MenuScreen extends StatelessWidget {
         title: Text(
           title,
           style: GoogleFonts.notoSansBengali(
-            // <-- ফন্ট আপডেট করা হয়েছে
             color: Colors.black,
             fontSize: 16,
           ),

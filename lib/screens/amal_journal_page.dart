@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../providers/amal_provider.dart';
-import 'package:intl/intl.dart'; // তারিখ ফরম্যাটের জন্য
 
 class AmalJournalPage extends StatelessWidget {
   const AmalJournalPage({super.key});

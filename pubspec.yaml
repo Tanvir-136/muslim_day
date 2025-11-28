@@ -17,7 +17,6 @@ dependencies:
   shared_preferences: ^2.2.3
   adhan: ^2.0.0-nullsafety.2
   hijri: ^3.0.0
-  # table_calendar: ^3.1.2
   flutter_compass: ^0.8.0
   permission_handler: ^12.0.1
   geocoding: ^4.0.0
@@ -26,6 +25,16 @@ dependencies:
   google_fonts: ^6.2.1 
   http: ^1.2.1
   flutter_markdown: ^0.7.1
+  # New dependencies for enhancements
+  flutter_local_notifications: ^18.0.1
+  url_launcher: ^6.3.1
+  flutter_svg: ^2.0.10+1
+  cached_network_image: ^3.4.1
+  just_audio: ^0.9.40
+  google_maps_flutter: ^2.9.0
+  flutter_animate: ^4.5.0
+  carousel_slider: ^5.0.0
+  percent_indicator: ^4.2.3
 
 dev_dependencies:
   flutter_test:
@@ -35,8 +44,17 @@ dev_dependencies:
 flutter:
   uses-material-design: true
 
-  # !! IMPORTANT !!
-  # Make sure you have added your data files here
-  # assets:
-    # - lib/data/bn_translation.json
-    # - lib/data/bangladesh_districts.dart
+  assets:
+    - assets/logo.png
+    - assets/fonts/
+
+  fonts:
+    - family: IndoPak
+      fonts:
+        - asset: assets/fonts/indopak.ttf
+    - family: NotoNaskhArabic
+      fonts:
+        - asset: assets/fonts/NotoNaskhArabic-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/NotoNaskhArabic-Bold.ttf
+          weight: 700

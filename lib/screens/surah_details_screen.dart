@@ -148,16 +148,96 @@ class SurahDetailsScreen extends StatelessWidget {
   /// সাব-হেডার উইজেট
   Widget _buildSubHeader(
       String place, int verseCount, String meaning) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16.0),
-      child: Center(
-        child: Text(
-          "$place | $meaning | আয়াত সংখ্যা: ${_getBengaliNumber(verseCount)}",
-          style: GoogleFonts.notoSansBengali(
-            fontSize: 16,
-            color: Colors.grey[700],
-          ),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 20.0),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            const Color(0xFF1D9375),
+            const Color(0xFF1D9375).withOpacity(0.8),
+          ],
         ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF1D9375).withOpacity(0.3),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Text(
+            surahNameArabic,
+            textAlign: TextAlign.center,
+            style: GoogleFonts.amiri(
+              fontSize: 32,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            surahNameBengali,
+            textAlign: TextAlign.center,
+            style: GoogleFonts.notoSansBengali(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: Colors.white.withOpacity(0.9),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            meaning,
+            textAlign: TextAlign.center,
+            style: GoogleFonts.notoSansBengali(
+              fontSize: 14,
+              fontStyle: FontStyle.italic,
+              color: Colors.white.withOpacity(0.8),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Divider(color: Colors.white.withOpacity(0.3)),
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _buildInfoChip(Icons.place, place),
+              _buildInfoChip(Icons.format_list_numbered,
+                  'আয়াত: ${_getBengaliNumber(verseCount)}'),
+              _buildInfoChip(Icons.tag, 'সূরা: ${_getBengaliNumber(surahNumber)}'),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoChip(IconData icon, String text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: Colors.white),
+          const SizedBox(width: 6),
+          Text(
+            text,
+            style: GoogleFonts.notoSansBengali(
+              fontSize: 12,
+              color: Colors.white,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -165,22 +245,47 @@ class SurahDetailsScreen extends StatelessWidget {
   /// বিসমিল্লাহ দেখানোর জন্য কার্ড
   Widget _buildBismillahCard(QuranSettings settings) {
     return Card(
-      elevation: 1,
+      elevation: 2,
       color: Colors.white,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: Colors.grey.shade200, width: 1),
+      ),
       margin: const EdgeInsets.only(bottom: 16),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              const Color(0xFF1D9375).withOpacity(0.05),
+              Colors.white,
+            ],
+          ),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 32.0),
         child: Center(
-          child: Text(
-            quran.basmala,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: settings.arabicFontSize * 1.1, 
-              fontFamily: GoogleFonts.amiri().fontFamily, 
-              color: Colors.teal,
-              fontWeight: FontWeight.w600,
-            ),
+          child: Column(
+            children: [
+              Icon(
+                Icons.menu_book,
+                size: 32,
+                color: const Color(0xFF1D9375).withOpacity(0.7),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                quran.basmala,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: settings.arabicFontSize * 1.2,
+                  fontFamily: settings.arabicFontFamily,
+                  color: const Color(0xFF1D9375),
+                  fontWeight: FontWeight.bold,
+                  height: 2.0,
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -205,12 +310,15 @@ class _VerseCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      elevation: 1,
+      elevation: 2,
       color: Colors.white,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: Colors.grey.shade200, width: 1),
+      ),
       margin: const EdgeInsets.only(bottom: 16),
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -218,61 +326,133 @@ class _VerseCard extends StatelessWidget {
             Row(
               children: [
                 Container(
-                  width: 36,
-                  height: 36,
+                  width: 40,
+                  height: 40,
                   decoration: BoxDecoration(
-                    color: Colors.teal.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
+                    gradient: LinearGradient(
+                      colors: [
+                        const Color(0xFF1D9375),
+                        const Color(0xFF1D9375).withOpacity(0.7),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(10),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF1D9375).withOpacity(0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
                   alignment: Alignment.center,
                   child: Text(
                     _getBengaliNumber(verseNumber),
                     style: const TextStyle(
-                      color: Colors.teal,
+                      color: Colors.white,
                       fontWeight: FontWeight.bold,
-                      fontSize: 15,
+                      fontSize: 16,
                     ),
                   ),
                 ),
                 const Spacer(),
-                IconButton(
-                  icon: Icon(Icons.more_horiz, color: Colors.grey[400]),
-                  onPressed: () {
-                    // এখানে কপি, শেয়ার, বুকমার্ক অপশন যোগ করা যাবে
-                  },
+                Row(
+                  children: [
+                    _buildActionButton(Icons.bookmark_border, () {}),
+                    const SizedBox(width: 4),
+                    _buildActionButton(Icons.share, () {}),
+                    const SizedBox(width: 4),
+                    _buildActionButton(Icons.copy, () {}),
+                  ],
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             
             // --- আরবি আয়াত ---
-            Text(
-              verseText,
-              textDirection: TextDirection.rtl,
-              textAlign: TextAlign.right,
-              style: TextStyle(
-                fontSize: settings.arabicFontSize,
-                fontFamily: GoogleFonts.amiri().fontFamily,
-                color: Colors.black87,
-                fontWeight: FontWeight.w600,
-                height: 1.8, // লাইন স্পেসিং
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // --- বাংলা অনুবাদ ---
-            if (settings.showTranslation)
-              Text(
-                verseTranslation, // !! এটি ইংরেজি অনুবাদ (Placeholder)
-                textAlign: TextAlign.left,
-                style: GoogleFonts.notoSansBengali(
-                  fontSize: settings.translationFontSize,
-                  color: Colors.grey[700],
-                  height: 1.6,
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1D9375).withOpacity(0.03),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: const Color(0xFF1D9375).withOpacity(0.1),
                 ),
               ),
+              child: Text(
+                verseText,
+                textDirection: TextDirection.rtl,
+                textAlign: TextAlign.right,
+                style: TextStyle(
+                  fontSize: settings.arabicFontSize,
+                  fontFamily: settings.arabicFontFamily,
+                  color: Colors.black87,
+                  fontWeight: FontWeight.w600,
+                  height: 2.0, // লাইন স্পেসিং বাড়ানো হয়েছে
+                ),
+              ),
+            ),
+            
+            // --- বাংলা অনুবাদ ---
+            if (settings.showTranslation) ...[
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade50,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.grey.shade200),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade300,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        'অনুবাদ',
+                        style: GoogleFonts.notoSansBengali(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey.shade700,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        verseTranslation,
+                        textAlign: TextAlign.left,
+                        style: GoogleFonts.notoSansBengali(
+                          fontSize: settings.translationFontSize,
+                          color: Colors.grey[800],
+                          height: 1.7,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildActionButton(IconData icon, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: Colors.grey.shade100,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Icon(icon, size: 18, color: Colors.grey.shade600),
       ),
     );
   }

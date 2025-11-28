@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
 class InfoCard extends StatelessWidget {
-  // Properties for the main card type
   final String title;
   final String? content;
   final bool hasInfoIcon;
   final bool isSimple;
+  final IconData? icon;
 
   // Properties for the Sehri/Iftar card type
   final String? time;
@@ -18,6 +18,7 @@ class InfoCard extends StatelessWidget {
     this.content,
     this.hasInfoIcon = false,
     this.isSimple = false,
+    this.icon,
   })  : time = null,
         isCountdown = false;
 
@@ -29,7 +30,8 @@ class InfoCard extends StatelessWidget {
     this.isCountdown = false,
   })  : content = null,
         hasInfoIcon = false,
-        isSimple = false;
+        isSimple = false,
+        icon = null;
 
   @override
   Widget build(BuildContext context) {
@@ -49,6 +51,18 @@ class InfoCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Colors.grey.shade300,
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            spreadRadius: 1,
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -56,11 +70,15 @@ class InfoCard extends StatelessWidget {
         children: [
           Row(
             children: [
+              if (icon != null) ...[
+                Icon(icon, color: const Color(0xFF1D9375), size: 20),
+                const SizedBox(width: 8),
+              ],
               Expanded(
                 child: Text(
                   title,
                   overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
+                  maxLines: 2,
                   style: const TextStyle(
                     color: Colors.black,
                     fontWeight: FontWeight.bold,
@@ -68,7 +86,7 @@ class InfoCard extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
+              if (hasInfoIcon) const SizedBox(width: 8),
               if (hasInfoIcon) const Icon(Icons.info_outline, color: Colors.black54, size: 18),
             ],
           ),
@@ -91,6 +109,18 @@ class InfoCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: Colors.grey.shade300,
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            spreadRadius: 1,
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         children: [
@@ -100,12 +130,29 @@ class InfoCard extends StatelessWidget {
             time!,
             style: TextStyle(
               fontWeight: FontWeight.bold,
-              fontSize: 18,
+              fontSize: 20,
               color: isCountdown ? const Color(0xFFD32F2F) : const Color(0xFF1D9375),
             ),
           ),
           const SizedBox(height: 8),
-          Text('অ্যালার্ম', style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1D9375).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.alarm, color: Color(0xFF1D9375), size: 16),
+                const SizedBox(width: 4),
+                Text(
+                  'অ্যালার্ম',
+                  style: TextStyle(color: Colors.grey[700], fontSize: 12),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
