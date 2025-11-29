@@ -180,8 +180,9 @@ class QuranScreen extends StatelessWidget {
                 // শেষে: আরবি নাম
                 trailing: Text(
                   arabicName,
+                  textDirection: TextDirection.rtl,
                   style: TextStyle(
-                    fontFamily: settings.arabicFont, // From your settings
+                    fontFamily: settings.arabicFontFamily, // Use mapped font family
                     fontSize: 20,
                     fontWeight: FontWeight.w600,
                     color: Colors.teal,

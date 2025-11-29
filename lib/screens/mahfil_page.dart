@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
-class MahfilPage extends StatefulWidget {
-  const MahfilPage({super.key});
+class CommunityHubPage extends StatefulWidget {
+  const CommunityHubPage({super.key});
 
   @override
-  State<MahfilPage> createState() => _MahfilPageState();
+  State<CommunityHubPage> createState() => _CommunityHubPageState();
 }
 
-class _MahfilPageState extends State<MahfilPage> with SingleTickerProviderStateMixin {
+class _CommunityHubPageState extends State<CommunityHubPage> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   
   @override
@@ -30,7 +30,7 @@ class _MahfilPageState extends State<MahfilPage> with SingleTickerProviderStateM
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
         title: Text(
-          'মাহফিল ও ইভেন্ট',
+          'কমিউনিটি হাব',
           style: GoogleFonts.notoSansBengali(
             fontWeight: FontWeight.bold,
             color: Colors.white,
@@ -44,6 +44,7 @@ class _MahfilPageState extends State<MahfilPage> with SingleTickerProviderStateM
           unselectedLabelColor: Colors.white70,
           indicatorColor: Colors.white,
           indicatorWeight: 3,
+          isScrollable: true,
           labelStyle: GoogleFonts.notoSansBengali(
             fontWeight: FontWeight.bold,
             fontSize: 14,
@@ -254,19 +255,26 @@ class _MahfilPageState extends State<MahfilPage> with SingleTickerProviderStateM
                     ),
                     const SizedBox(height: 8),
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
                       children: [
                         Icon(Icons.calendar_today, size: 14, color: Colors.grey[600]),
                         const SizedBox(width: 4),
-                        Text(
-                          DateFormat('dd MMM, yyyy', 'bn_BD').format(date),
-                          style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                        Flexible(
+                          child: Text(
+                            DateFormat('dd MMM, yyyy', 'bn_BD').format(date),
+                            style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: 8),
                         Icon(Icons.access_time, size: 14, color: Colors.grey[600]),
                         const SizedBox(width: 4),
-                        Text(
-                          time,
-                          style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                        Flexible(
+                          child: Text(
+                            time,
+                            style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                       ],
                     ),

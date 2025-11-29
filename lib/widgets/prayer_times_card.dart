@@ -67,11 +67,13 @@ class PrayerTimesCard extends StatelessWidget {
             },
             borderRadius: BorderRadius.circular(8),
             child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
+              padding:
+                  const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.calendar_month, color: Color(0xFF1D9375), size: 18),
+                  const Icon(Icons.calendar_month,
+                      color: Color(0xFF1D9375), size: 18),
                   const SizedBox(width: 8),
                   Text(
                     HijriCalendar.now().toFormat("d MMM yyyy"),
@@ -82,7 +84,8 @@ class PrayerTimesCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 4),
-                  const Icon(Icons.arrow_forward_ios, color: Color(0xFF1D9375), size: 12),
+                  const Icon(Icons.arrow_forward_ios,
+                      color: Color(0xFF1D9375), size: 12),
                 ],
               ),
             ),
@@ -94,20 +97,22 @@ class PrayerTimesCard extends StatelessWidget {
 
   Widget _buildProgressIndicator(BuildContext context) {
     // if prohibited color change
-    final Color progressColor = isProhibitedTime ? Colors.red.shade700 : const Color(0xFF1D9375);
+    final Color progressColor =
+        isProhibitedTime ? Colors.red.shade700 : const Color(0xFF1D9375);
     final String title = isProhibitedTime ? 'নিষিদ্ধ সময়' : currentPrayerName;
-    final String subtitle = isProhibitedTime ? 'সালাত থেকে বিরত থাকুন' : 'শেষ হতে বাকি';
+    final String subtitle =
+        isProhibitedTime ? 'সালাত থেকে বিরত থাকুন' : 'শেষ হতে বাকি';
 
     return Expanded(
       flex: 3,
       child: Column(
         children: [
           Text(
-            title, 
+            title,
             style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: progressColor), 
+                color: progressColor),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 4),
@@ -193,7 +198,8 @@ class PrayerTimesCard extends StatelessWidget {
     );
   }
 
-  Widget _prayerRow(BuildContext context, String name, DateTime startTime, DateTime endTime,
+  Widget _prayerRow(
+      BuildContext context, String name, DateTime startTime, DateTime endTime,
       {bool isActive = false}) {
     // Bengali number conversion
     String toBengaliNumber(String number) {
@@ -208,7 +214,8 @@ class PrayerTimesCard extends StatelessWidget {
     // Convert to 12-hour format
     String formatTime12Hour(DateTime time) {
       int hour = time.hour;
-      if (hour > 12) hour -= 12;
+      if (hour > 12)
+        hour -= 12;
       else if (hour == 0) hour = 12;
       String minute = time.minute.toString().padLeft(2, '0');
       return '$hour:$minute';
@@ -225,7 +232,10 @@ class PrayerTimesCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: isActive ? const Color(0x1A1D9375) : Colors.transparent,
         borderRadius: BorderRadius.circular(8),
-        border: isActive ? Border.all(color: const Color(0xFF1D9375).withOpacity(0.3), width: 1) : null,
+        border: isActive
+            ? Border.all(
+                color: const Color(0xFF1D9375).withOpacity(0.3), width: 1)
+            : null,
       ),
       child: Row(
         children: [

@@ -21,6 +21,10 @@ class QuranSettings extends ChangeNotifier {
   bool get showTranslation => _showTranslation;
   
   String? get arabicFontFamily {
+    if (_arabicFont == 'IndoPak') {
+      // Custom IndoPak font from assets (pubspec.yaml registered family: IndoPak)
+      return 'IndoPak';
+    }
     if (_arabicFont == 'NotoNaskhArabic') {
       return GoogleFonts.notoNaskhArabic().fontFamily;
     }

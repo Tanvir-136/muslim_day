@@ -97,6 +97,7 @@ class SettingsPage extends StatelessWidget {
               Wrap(
                 spacing: 8.0,
                 children: <Widget>[
+                  _buildFontChip(settings, 'IndoPak', const TextStyle(fontFamily: 'IndoPak')),
                   _buildFontChip(settings, 'Amiri', GoogleFonts.amiri()),
                   _buildFontChip(settings, 'NotoNaskhArabic', GoogleFonts.notoNaskhArabic()),
                   _buildFontChip(settings, 'Lateef', GoogleFonts.lateef()),

@@ -35,7 +35,8 @@ class _HomeContentState extends State<HomeContent> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (!_isInitialized) {
-      final prayerSettings = Provider.of<PrayerSettings>(context, listen: false);
+      final prayerSettings =
+          Provider.of<PrayerSettings>(context, listen: false);
       if (!prayerSettings.isLoading) {
         _updateAllData(prayerSettings);
       }
@@ -57,7 +58,7 @@ class _HomeContentState extends State<HomeContent> {
       final now = DateTime.now();
       _allPrayerTimes = settings.getExtendedPrayerTimes(now);
       _fivePrayers = settings.getFivePrayers(now);
-      
+
       _hijriDate = HijriCalendar.now().toFormat("d MMMM, yyyy");
       _gregorianDate = DateFormat('d MMMM, EEEE', 'bn_BD').format(now);
 
@@ -75,30 +76,47 @@ class _HomeContentState extends State<HomeContent> {
     if (_allPrayerTimes.isEmpty) return;
 
     final now = DateTime.now();
-    
+
     for (int i = 0; i < _allPrayerTimes.length; i++) {
       final prayer = _allPrayerTimes[i];
-      final nextIndex = (i + 1) % _allPrayerTimes.length;
-      final nextPrayer = _allPrayerTimes[nextIndex];
+      final nextPrayer = _allPrayerTimes[(i + 1) % _allPrayerTimes.length];
 
-      if (now.isAfter(prayer.time) && now.isBefore(nextPrayer.time)) {
+      DateTime prayerStartTime = prayer.time;
+      DateTime nextPrayerTime = nextPrayer.time;
+
+      // This logic handles the overnight case for prayers like Isha.
+      // If the next prayer is on the next day (e.g., Tahajjud after Isha),
+      // we adjust its date to be tomorrow.
+      if (nextPrayerTime.isBefore(prayerStartTime)) {
+        if (now.isAfter(prayerStartTime)) {
+          // Current time is after Isha today, next prayer is tomorrow
+          nextPrayerTime = nextPrayerTime.add(const Duration(days: 1));
+        } else {
+          // Current time is before Fajr today, previous prayer was yesterday
+          prayerStartTime = prayerStartTime.subtract(const Duration(days: 1));
+        }
+      }
+      
+      if (now.isAfter(prayerStartTime) && now.isBefore(nextPrayerTime)) {
         _currentPrayer = prayer;
         _nextPrayer = nextPrayer;
-        
         _isProhibitedTime = prayer.isProhibited;
-        
+
         if (_isProhibitedTime) {
           _currentPrayerName = 'নিষিদ্ধ সময়';
           _prayerProgress = 0.0;
         } else {
           _currentPrayerName = prayer.nameBn;
-          
-          final totalDuration = nextPrayer.time.difference(prayer.time);
-          final elapsedDuration = now.difference(prayer.time);
-          _prayerProgress = elapsedDuration.inSeconds / totalDuration.inSeconds;
+          final totalDuration = nextPrayerTime.difference(prayerStartTime);
+          final elapsedDuration = now.difference(prayerStartTime);
+          if (totalDuration.inSeconds > 0) {
+            _prayerProgress = elapsedDuration.inSeconds / totalDuration.inSeconds;
+          } else {
+            _prayerProgress = 0.0;
+          }
         }
         
-        _timeLeftToEnd = nextPrayer.time.difference(now);
+        _timeLeftToEnd = nextPrayerTime.difference(now);
         break;
       }
     }
@@ -120,7 +138,7 @@ class _HomeContentState extends State<HomeContent> {
         if (_allPrayerTimes.isEmpty) return;
 
         final now = DateTime.now();
-        if (_allPrayerTimes.isNotEmpty && 
+        if (_allPrayerTimes.isNotEmpty &&
             now.day != _allPrayerTimes.first.time.day) {
           _updateAllData(Provider.of<PrayerSettings>(context, listen: false));
         } else {
@@ -146,7 +164,7 @@ class _HomeContentState extends State<HomeContent> {
     String minutes = twoDigits(duration.inMinutes.remainder(60));
     String seconds = twoDigits(duration.inSeconds.remainder(60));
     String timeStr = "$hours:$minutes:$seconds";
-    
+
     // Convert to Bengali numerals
     return _toBengaliNumber(timeStr);
   }
@@ -163,16 +181,16 @@ class _HomeContentState extends State<HomeContent> {
   String _formatTime(DateTime time) {
     // Convert to 12-hour format
     int hour = time.hour;
-    
+
     if (hour > 12) {
       hour -= 12;
     } else if (hour == 0) {
       hour = 12;
     }
-    
+
     String minute = time.minute.toString().padLeft(2, '0');
     String formatted = '$hour:$minute';
-    
+
     return _toBengaliNumber(formatted);
   }
 
@@ -184,23 +202,33 @@ class _HomeContentState extends State<HomeContent> {
   Widget build(BuildContext context) {
     return Consumer<PrayerSettings>(
       builder: (context, settings, child) {
-        if (settings.isLoading || _allPrayerTimes.isEmpty || _fivePrayers.isEmpty) {
+        if (settings.isLoading ||
+            _allPrayerTimes.isEmpty ||
+            _fivePrayers.isEmpty) {
           return const Center(
               child: CircularProgressIndicator(color: Colors.teal));
         }
 
-        final sunriseTime = _allPrayerTimes.firstWhere((p) => p.type == PrayerTimeType.sunrise);
-        final maghribTime = _fivePrayers.firstWhere((p) => p.type == PrayerTimeType.maghrib);
-        
-        final tahajjudTime = _allPrayerTimes.firstWhere((p) => p.type == PrayerTimeType.tahajjud);
-        final ishrakTime = _allPrayerTimes.firstWhere((p) => p.type == PrayerTimeType.ishrak);
-        
-        final prohibitedAfterFajr = _allPrayerTimes.firstWhere((p) => p.type == PrayerTimeType.prohibitedAfterFajr);
-        final prohibitedBeforeDhuhr = _allPrayerTimes.firstWhere((p) => p.type == PrayerTimeType.prohibitedBeforeDhuhr);
-        final prohibitedAfterAsr = _allPrayerTimes.firstWhere((p) => p.type == PrayerTimeType.prohibitedAfterAsr);
-        
-        final dhuhrTime = _fivePrayers.firstWhere((p) => p.type == PrayerTimeType.dhuhr);
-        
+        final sunriseTime =
+            _allPrayerTimes.firstWhere((p) => p.type == PrayerTimeType.sunrise);
+        final maghribTime =
+            _fivePrayers.firstWhere((p) => p.type == PrayerTimeType.maghrib);
+
+        final tahajjudTime = _allPrayerTimes
+            .firstWhere((p) => p.type == PrayerTimeType.tahajjud);
+        final ishrakTime =
+            _allPrayerTimes.firstWhere((p) => p.type == PrayerTimeType.ishrak);
+
+        final prohibitedAfterFajr = _allPrayerTimes
+            .firstWhere((p) => p.type == PrayerTimeType.prohibitedAfterFajr);
+        final prohibitedBeforeDhuhr = _allPrayerTimes
+            .firstWhere((p) => p.type == PrayerTimeType.prohibitedBeforeDhuhr);
+        final prohibitedAfterAsr = _allPrayerTimes
+            .firstWhere((p) => p.type == PrayerTimeType.prohibitedAfterAsr);
+
+        final dhuhrTime =
+            _fivePrayers.firstWhere((p) => p.type == PrayerTimeType.dhuhr);
+
         return SafeArea(
           child: SingleChildScrollView(
             child: Column(
@@ -215,7 +243,8 @@ class _HomeContentState extends State<HomeContent> {
                   gregorianDate: _gregorianDate,
                   hijriDate: _hijriDate,
                   sunriseTime: _formatTime(sunriseTime.time),
-                  sunsetTime: _formatTime(maghribTime.time.subtract(const Duration(minutes: 2))),
+                  sunsetTime: _formatTime(
+                      maghribTime.time.subtract(const Duration(minutes: 2))),
                 ),
                 PrayerTimesCard(
                   fivePrayers: _fivePrayers,
@@ -228,9 +257,12 @@ class _HomeContentState extends State<HomeContent> {
                 _buildInfoCardsGrid(
                   ishrakTime: _formatTime(ishrakTime.time),
                   tahajjudTime: _formatTime(tahajjudTime.time),
-                  sunriseRange: '${_formatTime(prohibitedAfterFajr.time)} - ${_formatTime(ishrakTime.time)}',
-                  zawalRange: '${_formatTime(prohibitedBeforeDhuhr.time)} - ${_formatTime(dhuhrTime.time)}',
-                  sunsetRange: '${_formatTime(prohibitedAfterAsr.time)} - ${_formatTime(maghribTime.time)}',
+                  sunriseRange:
+                      '${_formatTime(prohibitedAfterFajr.time)} - ${_formatTime(ishrakTime.time)}',
+                  zawalRange:
+                      '${_formatTime(prohibitedBeforeDhuhr.time)} - ${_formatTime(dhuhrTime.time)}',
+                  sunsetRange:
+                      '${_formatTime(prohibitedAfterAsr.time)} - ${_formatTime(maghribTime.time)}',
                 ),
                 _buildSehriIftarRow(),
               ],
@@ -303,12 +335,15 @@ class _HomeContentState extends State<HomeContent> {
 
   Widget _buildSehriIftarRow() {
     if (_fivePrayers.isEmpty) return const SizedBox.shrink();
-    
-    final fajrTime = _fivePrayers.firstWhere((p) => p.type == PrayerTimeType.fajr);
-    final maghribTime = _fivePrayers.firstWhere((p) => p.type == PrayerTimeType.maghrib);
-    
+
+    final fajrTime =
+        _fivePrayers.firstWhere((p) => p.type == PrayerTimeType.fajr);
+    final maghribTime =
+        _fivePrayers.firstWhere((p) => p.type == PrayerTimeType.maghrib);
+
     String iftarTime = _formatTime(maghribTime.time);
-    String sehriTime = _formatTime(fajrTime.time.subtract(const Duration(minutes: 10)));
+    String sehriTime =
+        _formatTime(fajrTime.time.subtract(const Duration(minutes: 10)));
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
@@ -319,7 +354,8 @@ class _HomeContentState extends State<HomeContent> {
                   title: 'সাহরির শেষ সময়:', time: sehriTime)),
           const SizedBox(width: 12),
           Expanded(
-              child: InfoCard.sehriIftar(title: 'আজকের ইফতার:', time: iftarTime)),
+              child:
+                  InfoCard.sehriIftar(title: 'আজকের ইফতার:', time: iftarTime)),
         ],
       ),
     );

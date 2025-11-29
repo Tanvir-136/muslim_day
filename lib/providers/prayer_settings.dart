@@ -92,21 +92,7 @@ class PrayerSettings extends ChangeNotifier {
   List<ExtendedPrayerTime> getExtendedPrayerTimes(DateTime date) {
     final prayerTimes = PrayerTimes.today(_coordinates, calculationParams);
     final List<ExtendedPrayerTime> times = [];
-
-    // Tahajjud (Last third of night)
-    final lastThirdOfNight = prayerTimes.isha.add(
-      Duration(
-        minutes: (prayerTimes.fajr.difference(prayerTimes.isha).inMinutes * 2 / 3).round(),
-      ),
-    );
-    times.add(ExtendedPrayerTime(
-      name: 'Tahajjud',
-      nameBn: 'তাহাজ্জুদ',
-      time: lastThirdOfNight,
-      type: PrayerTimeType.tahajjud,
-      isNafil: true,
-    ));
-
+    // Order the timeline from Fajr -> ... -> Isha, then add Tahajjud after Isha.
     // Fajr
     times.add(ExtendedPrayerTime(
       name: 'Fajr',
@@ -115,7 +101,7 @@ class PrayerSettings extends ChangeNotifier {
       type: PrayerTimeType.fajr,
     ));
 
-    // Prohibited time after Fajr (until 15-20 mins after sunrise)
+    // Prohibited time after Fajr (from sunrise until Ishrak)
     times.add(ExtendedPrayerTime(
       name: 'Prohibited (After Fajr)',
       nameBn: 'নিষিদ্ধ সময় (ফজরের পর)',
@@ -206,6 +192,20 @@ class PrayerSettings extends ChangeNotifier {
       type: PrayerTimeType.isha,
     ));
 
+    // Tahajjud (Last third of night begins after Isha)
+    // Compute start of last third of night as: Isha + 2/3 of the night length (Isha->Fajr)
+    final nightDurationMinutes = prayerTimes.fajr.difference(prayerTimes.isha).inMinutes;
+    final tahajjudStart = prayerTimes.isha.add(
+      Duration(minutes: ((nightDurationMinutes * 2) / 3).round()),
+    );
+    times.add(ExtendedPrayerTime(
+      name: 'Tahajjud',
+      nameBn: 'তাহাজ্জুদ',
+      time: tahajjudStart,
+      type: PrayerTimeType.tahajjud,
+      isNafil: true,
+    ));
+
     return times;
   }
 
@@ -236,6 +236,17 @@ class PrayerSettings extends ChangeNotifier {
   Future<void> updateMadhab(Madhab madhab) async {
     _madhab = madhab;
     await _prefs.setString('madhab', madhab.name);
+    notifyListeners();
+  }
+
+  Future<void> updateManualLocation(double latitude, double longitude, String locationName) async {
+    _coordinates = Coordinates(latitude, longitude);
+    _locationName = locationName;
+
+    await _prefs.setDouble('latitude', latitude);
+    await _prefs.setDouble('longitude', longitude);
+    await _prefs.setString('locationName', locationName);
+    
     notifyListeners();
   }
 

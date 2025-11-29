@@ -22,7 +22,7 @@ class _HomeScreenState extends State<HomeScreen> {
   // This list is no longer 'const'
   static final List<Widget> _pages = <Widget>[
     const HomeContent(), // Index 0: Home (keeping original for now)
-    const MahfilPage(), // Index 1: Mahfil
+  const CommunityHubPage(), // Index 1: Community Hub
     
     // Index 2: Quran (as before)
     ChangeNotifierProvider(

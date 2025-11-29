@@ -3,68 +3,193 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:adhan/adhan.dart';
 import '../providers/prayer_settings.dart';
+import 'location_selection_screen.dart';
 
 class PrayerSettingsPage extends StatelessWidget {
   const PrayerSettingsPage({super.key});
 
+  List<CalculationMethod> _getAvailableMethods() {
+    return [
+      CalculationMethod.muslim_world_league,
+      CalculationMethod.egyptian,
+      CalculationMethod.karachi,
+      CalculationMethod.umm_al_qura,
+      CalculationMethod.dubai,
+      CalculationMethod.qatar,
+      CalculationMethod.kuwait,
+      CalculationMethod.singapore,
+      CalculationMethod.north_america,
+      CalculationMethod.moon_sighting_committee,
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Use Consumer to read and update settings
     return Consumer<PrayerSettings>(
       builder: (context, settings, child) {
         return Scaffold(
           appBar: AppBar(
             title: Text(
-              "Prayer Settings",
+              "সেটিংস",
               style: GoogleFonts.notoSansBengali(fontWeight: FontWeight.bold),
             ),
             backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-            foregroundColor: Colors.black, // Back arrow and title color
-            elevation: 1,
+            foregroundColor: Colors.black,
+            elevation: 0,
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.refresh),
+                onPressed: () {
+                  settings.detectCurrentLocation();
+                },
+              ),
+            ],
           ),
           backgroundColor: Colors.grey[50],
           body: ListView(
             padding: const EdgeInsets.all(16.0),
             children: [
-              // --- Calculation Method ---
-              _buildSectionHeader(context, "Calculation Method"),
-              _buildDropdown<CalculationMethod>(
-                value: settings.calculationMethod,
-                items: CalculationMethod.values.map((method) {
-                  return DropdownMenuItem(
-                    value: method,
-                    child: Text(
-                      _getCalculationMethodName(method),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  );
-                }).toList(),
-                onChanged: (newValue) {
-                  if (newValue != null) {
-                    settings.updateCalculationMethod(newValue);
-                  }
-                },
+              _buildCard(
+                child: ListTile(
+                  leading: const Icon(Icons.location_on, color: Color(0xFF1D9375)),
+                  title: Text(
+                    'লোকেশন সেট করুন',
+                    style: GoogleFonts.notoSansBengali(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: Text(
+                    settings.locationName,
+                    style: GoogleFonts.notoSansBengali(),
+                  ),
+                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const LocationSelectionScreen(),
+                      ),
+                    );
+                  },
+                ),
               ),
-
-              // --- Madhab ---
-              _buildSectionHeader(context, "Asr Juristic Method"),
-              _buildDropdown<Madhab>(
-                value: settings.madhab,
-                items: [
-                  const DropdownMenuItem(
-                    value: Madhab.hanafi,
-                    child: Text("Hanafi (Later Asr)"),
-                  ),
-                  const DropdownMenuItem(
-                    value: Madhab.shafi,
-                    child: Text("Standard (Shafi, Maliki, Hanbali)"),
-                  ),
-                ],
-                onChanged: (newValue) {
-                  if (newValue != null) {
-                    settings.updateMadhab(newValue);
-                  }
-                },
+              const SizedBox(height: 12),
+              _buildCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'হিসার সেট করুন',
+                            style: GoogleFonts.notoSansBengali(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'সালাত, দিবস, সময় ও তারিখ',
+                            style: GoogleFonts.notoSansBengali(
+                              fontSize: 12,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Divider(height: 1),
+                    ListTile(
+                      leading: const Icon(Icons.calculate, color: Color(0xFF1D9375)),
+                      title: Text(
+                        'গণনা হিসাব বিধি দিয়ে দেখুন',
+                        style: GoogleFonts.notoSansBengali(),
+                      ),
+                      subtitle: Text(
+                        _getCalculationMethodName(settings.calculationMethod),
+                        style: GoogleFonts.notoSansBengali(
+                          fontSize: 12,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                      trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                      onTap: () {
+                        _showCalculationMethodDialog(context, settings);
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              _buildCard(
+                child: Column(
+                  children: [
+                    ListTile(
+                      leading: const Icon(Icons.access_time, color: Color(0xFF1D9375)),
+                      title: Text(
+                        'আসরের হানাফী ভিত্তি দিয়ে দেখুন',
+                        style: GoogleFonts.notoSansBengali(fontWeight: FontWeight.bold),
+                      ),
+                      subtitle: Text(
+                        'Enable',
+                        style: GoogleFonts.notoSansBengali(fontSize: 12),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: _buildRadioOption(
+                              'হানাফী',
+                              settings.madhab == Madhab.hanafi,
+                              () => settings.updateMadhab(Madhab.hanafi),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _buildRadioOption(
+                              'শাফেয়ী, মালেকী ও হাম্বলী',
+                              settings.madhab == Madhab.shafi,
+                              () => settings.updateMadhab(Madhab.shafi),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              _buildCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Text(
+                        'সালাতের সময় হিসার করার পদ্ধতি',
+                        style: GoogleFonts.notoSansBengali(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                    const Divider(height: 1),
+                    ListTile(
+                      leading: const Icon(Icons.info_outline, color: Color(0xFF1D9375)),
+                      title: Text(
+                        _getCalculationMethodName(settings.calculationMethod),
+                        style: GoogleFonts.notoSansBengali(),
+                      ),
+                      subtitle: Text(
+                        'আপনার নির্বাচিত পদ্ধতিটি সালাতের সময় হিসাব করার জন্য ব্যবহার করা হবে।',
+                        style: GoogleFonts.notoSansBengali(fontSize: 12),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
@@ -73,50 +198,103 @@ class PrayerSettingsPage extends StatelessWidget {
     );
   }
 
-  // Helper to build section headers
-  Widget _buildSectionHeader(BuildContext context, String title) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 16.0, bottom: 8.0),
-      child: Text(
-        title,
-        style: GoogleFonts.notoSansBengali(
-          color: Colors.teal,
-          fontWeight: FontWeight.bold,
-          fontSize: 16,
-        ),
-      ),
-    );
-  }
-
-  // Generic Dropdown builder
-  Widget _buildDropdown<T>({
-    required T value,
-    required List<DropdownMenuItem<T>> items,
-    required ValueChanged<T?> onChanged,
-  }) {
+  Widget _buildCard({required Widget child}) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12.0),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(10.0),
-        border: Border.all(color: Colors.grey.shade300),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<T>(
-          value: value,
-          items: items,
-          onChanged: onChanged,
-          isExpanded: true,
-          style: GoogleFonts.notoSansBengali(
-            color: Colors.black,
-            fontSize: 15,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            spreadRadius: 1,
+            blurRadius: 4,
+            offset: const Offset(0, 2),
           ),
+        ],
+      ),
+      child: child,
+    );
+  }
+
+  Widget _buildRadioOption(String label, bool selected, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        decoration: BoxDecoration(
+          color: selected ? Colors.green.shade50 : Colors.grey.shade100,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: selected ? const Color(0xFF1D9375) : Colors.grey.shade300,
+            width: selected ? 2 : 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Radio<bool>(
+              value: selected,
+              groupValue: true,
+              onChanged: (value) => onTap(),
+              activeColor: const Color(0xFF1D9375),
+            ),
+            Expanded(
+              child: Text(
+                label,
+                style: GoogleFonts.notoSansBengali(
+                  fontSize: 12,
+                  fontWeight: selected ? FontWeight.bold : FontWeight.normal,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  // Helper to get readable names for calculation methods
+  void _showCalculationMethodDialog(BuildContext context, PrayerSettings settings) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(
+          'গণনা পদ্ধতি নির্বাচন করুন',
+          style: GoogleFonts.notoSansBengali(fontWeight: FontWeight.bold),
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: _getAvailableMethods().map((method) {
+              return RadioListTile<CalculationMethod>(
+                title: Text(
+                  _getCalculationMethodName(method),
+                  style: GoogleFonts.notoSansBengali(),
+                ),
+                value: method,
+                groupValue: settings.calculationMethod,
+                onChanged: (value) {
+                  if (value != null) {
+                    settings.updateCalculationMethod(value);
+                    Navigator.pop(context);
+                  }
+                },
+                activeColor: const Color(0xFF1D9375),
+              );
+            }).toList(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'বাতিল',
+              style: GoogleFonts.notoSansBengali(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   String _getCalculationMethodName(CalculationMethod method) {
     switch (method) {
       case CalculationMethod.muslim_world_league:
@@ -139,8 +317,6 @@ class PrayerSettingsPage extends StatelessWidget {
         return "ISNA (North America)";
       case CalculationMethod.moon_sighting_committee:
         return "Moonsighting Committee";
-      case CalculationMethod.tehran:
-        return "Tehran";
       case CalculationMethod.other:
         return "Other";
       default:
